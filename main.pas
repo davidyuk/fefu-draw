@@ -6,27 +6,9 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  ComCtrls, Menus, Buttons, StdCtrls;
+  ComCtrls, Menus, Buttons, StdCtrls, DrawShape, LinkedList;
 
 type
-  Shape = (sCursor, sPen, sLine, sEllipse, sRectangle);
-
-  PPaintBoxShape = ^PaintBoxShape;
-  PaintBoxShape = class(TObject)
-    Kind: Shape;
-    Point: array of TPoint;
-    LineSize: integer;
-    PenColor: TColor;
-    BrushColor: TColor;
-    Name: String;
-    IsVisible: boolean;
-    Before, Next: PPaintBoxShape;
-    procedure Paint();
-    procedure editPoint(x, y: integer; new: boolean);
-  public
-    constructor Create(newKind: Shape; newLineSize: integer; pen, brush: TColor);
-  end;
-
   { TFormMain }
 
   TFormMain = class(TForm)
@@ -102,70 +84,11 @@ var
   tool: Shape;
   isDrawing: boolean;
   penColor, brushColor: TColor;
-  shapeCounter: array [Shape] of integer;
   tempPoint: TPoint;
 
 implementation
 
 {$R *.lfm}
-
-function shapeToString(shape: Shape):string;
-begin
-  //возвращает название типа
-  case shape of
-    sCursor: result:= 'Курсор';
-    sPen: result:= 'Карандаш';
-    sLine: result:= 'Линия';
-    sEllipse: result:= 'Окружность';
-    sRectangle: result:= 'Прямоугольник';
-  end;
-end;
-
-constructor PaintBoxShape.Create(newKind: Shape; newLineSize: integer; pen, brush: TColor);
-begin
-  //инициализация объекта
-  self.Kind := newKind;
-  self.LineSize := newLineSize;
-  self.penColor:=pen;
-  self.brushColor:=brush;
-  self.IsVisible:=True;
-  inc(shapeCounter[newKind]);
-  self.Name:=shapeToString(newKind)+' '+intToStr(shapeCounter[newKind]);
-end;
-
-
-procedure PaintBoxShape.Paint();
-var i: integer;
-begin
-  //метод объекта PaintBoxShape, рисующий объект
-  if not(IsVisible) Then exit;
-  FormMain.PaintBox.Canvas.Pen.Width:=LineSize;
-  FormMain.PaintBox.Canvas.Pen.Color:=PenColor;
-  FormMain.PaintBox.Canvas.Brush.Color:=BrushColor;
-  case Kind of
-    sPen: begin
-      FormMain.PaintBox.Canvas.MoveTo(Point[0]);
-      for i:= 1 to High(Point) do
-        FormMain.PaintBox.Canvas.LineTo(Point[i]);
-    end;
-    sLine: begin
-      FormMain.PaintBox.Canvas.MoveTo(Point[0]);
-      FormMain.PaintBox.Canvas.LineTo(Point[1]);
-    end;
-    sEllipse: FormMain.PaintBox.Canvas.Ellipse(Point[0].X, Point[0].Y, Point[1].X, Point[1].Y);
-    sRectangle: FormMain.PaintBox.Canvas.Rectangle(Point[0].X, Point[0].Y, Point[1].X, Point[1].Y);
-  end;
-end;
-
-procedure PaintBoxShape.editPoint(x, y: integer; new: boolean);
-var newPoint: TPoint;
-begin
-  //изменяет последнюю точку в массиве или создаёт новую точку
-  newPoint.x:= x;
-  newPoint.y:= y;
-  if new then setLength(self.Point, length(self.Point)+1);
-  Point[High(Point)]:= newPoint;
-end;
 
 { TFormMain }
 
@@ -433,10 +356,10 @@ begin
   p:= FirstPBShape;
   if p = nil Then exit;
   While p^.next <> nil do begin
-    p^.Paint;
+    p^.Paint(PaintBox);
     p:=p^.next;
   end;
-  p^.Paint;
+  p^.Paint(PaintBox);
 end;
 
 procedure TFormMain.SpeedButtonToolClick(Sender: TObject);

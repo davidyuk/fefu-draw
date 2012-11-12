@@ -35,7 +35,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="2">
+    <Units Count="4">
       <Unit0>
         <Filename Value="draw.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -49,6 +49,16 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="main"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="drawshape.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DrawShape"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="layers.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="LinkedList"/>
+      </Unit3>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
