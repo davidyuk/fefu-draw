@@ -35,7 +35,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="5">
       <Unit0>
         <Filename Value="draw.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -55,10 +55,15 @@
         <UnitName Value="DrawShape"/>
       </Unit2>
       <Unit3>
-        <Filename Value="layers.pas"/>
+        <Filename Value="drawlayers.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="LinkedList"/>
+        <UnitName Value="DrawLayers"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="addobjects.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AddObjects"/>
+      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -80,6 +85,7 @@
     </Linking>
     <Other>
       <CompilerMessages>
+        <IgnoredMessages idx5024="True"/>
         <MsgFileName Value=""/>
       </CompilerMessages>
       <CompilerPath Value="$(CompPath)"/>
