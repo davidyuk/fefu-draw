@@ -35,7 +35,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="5">
+    <Units Count="4">
       <Unit0>
         <Filename Value="draw.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -44,26 +44,20 @@
       <Unit1>
         <Filename Value="main.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="FormMain"/>
-        <HasResources Value="True"/>
+        <ComponentName Value="MainF"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="main"/>
       </Unit1>
       <Unit2>
-        <Filename Value="drawshape.pas"/>
+        <Filename Value="drawtools.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="DrawShape"/>
+        <UnitName Value="DrawTools"/>
       </Unit2>
       <Unit3>
-        <Filename Value="drawlayers.pas"/>
+        <Filename Value="drawshapes.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="DrawLayers"/>
+        <UnitName Value="DrawShapes"/>
       </Unit3>
-      <Unit4>
-        <Filename Value="addobjects.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="AddObjects"/>
-      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -85,7 +79,6 @@
     </Linking>
     <Other>
       <CompilerMessages>
-        <IgnoredMessages idx5024="True"/>
         <MsgFileName Value=""/>
       </CompilerMessages>
       <CompilerPath Value="$(CompPath)"/>
