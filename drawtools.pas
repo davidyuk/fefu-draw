@@ -28,7 +28,7 @@ type
     class procedure MMove(point: TPoint; isDrawing: boolean); virtual;
     class procedure MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer);
       virtual; abstract;
-    //class procedure MUp(point: TPoint); virtual;
+    class procedure MUp(point: TPoint); virtual;
   end;
 
   ClassOfTool = class of TToolBase;
@@ -148,6 +148,11 @@ begin
   Scene.getLast.NewPoint(point);
 end;
 
+class procedure TToolBase.MUp(point: TPoint);
+begin
+  {??}
+end;
+
 { TScene }
 
 procedure TScene.addShape(shape: TShapeBase);
@@ -188,10 +193,10 @@ end;
 initialization
 
   ToolContainer := TToolContainer.Create;
-  ToolContainer.addTool(TToolFreeHand, 'icons/pen.bmp');
-  ToolContainer.addTool(TToolLine, 'icons/line.bmp');
-  ToolContainer.addTool(TToolRectangle, 'icons/rectangle.bmp');
-  ToolContainer.addTool(TToolEllipse, 'icons/ellipse.bmp');
-  ToolContainer.addTool(TToolPolyline, 'icons/polyline.bmp');
+  ToolContainer.addTool(TToolFreeHand, 'icons/FreePen.bmp');
+  ToolContainer.addTool(TToolLine, 'icons/Line.bmp');
+  ToolContainer.addTool(TToolRectangle, 'icons/Rectangle.bmp');
+  ToolContainer.addTool(TToolEllipse, 'icons/Ellipse.bmp');
+  ToolContainer.addTool(TToolPolyline, 'icons/Polyline.bmp');
 
 end.

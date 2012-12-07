@@ -81,6 +81,7 @@ implementation
 
 procedure TShapePolyline.EditPoint(point: TPoint);
 begin
+  if high(points) = 0 Then Self.NewPoint(point);
   points[high(points)]:= point;
 end;
 

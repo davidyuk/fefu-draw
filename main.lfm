@@ -1,7 +1,7 @@
 object MainF: TMainF
-  Left = 508
+  Left = 695
   Height = 500
-  Top = 179
+  Top = 279
   Width = 500
   Caption = 'Векторный редактор'
   ClientHeight = 480
@@ -9,79 +9,63 @@ object MainF: TMainF
   Color = clWhite
   Menu = MainMenu
   OnCreate = FormCreate
-  LCLVersion = '0.9.31'
+  LCLVersion = '1.0.2.0'
   object LeftP: TPanel
     Left = 0
-    Height = 480
+    Height = 355
     Top = 0
     Width = 128
     Align = alLeft
     BevelOuter = bvNone
-    BorderWidth = 1
-    BorderStyle = bsSingle
-    ClientHeight = 476
-    ClientWidth = 124
+    ClientHeight = 355
+    ClientWidth = 128
     ParentColor = False
     TabOrder = 0
-    object PaletteP: TPanel
-      Left = 1
-      Height = 117
-      Top = 358
+    object ToolsP: TPanel
+      Left = 3
+      Height = 141
+      Top = 3
       Width = 122
-      Align = alBottom
+      Align = alTop
+      BorderSpacing.Around = 3
       BevelOuter = bvNone
-      ClientHeight = 117
-      ClientWidth = 122
+      BorderWidth = 1
+      BorderStyle = bsSingle
+      ClientHeight = 137
+      ClientWidth = 118
+      Color = clWhite
+      ParentColor = False
       TabOrder = 0
-      object BrushS: TShape
-        Left = 53
-        Height = 33
-        Top = 72
-        Width = 33
-        OnMouseDown = BrushSMouseDown
-      end
-      object PenS: TShape
-        Left = 37
-        Height = 33
-        Top = 56
-        Width = 33
-        Brush.Color = clBlack
-        OnMouseDown = PenSMouseDown
-      end
-      object PenWidthL: TLabel
-        Left = 0
-        Height = 14
-        Top = 0
-        Width = 122
+      object ToolsL: TLabel
+        Left = 3
+        Height = 16
+        Top = 3
+        Width = 112
         Align = alTop
-        Caption = 'Толщина пера: 1px'
+        BorderSpacing.Around = 2
+        Caption = 'Инструменты:'
         ParentColor = False
       end
-      object PenWidthTB: TTrackBar
-        Left = 0
-        Height = 20
-        Top = 14
-        Width = 122
-        Max = 20
-        Min = 1
-        OnChange = PenWidthTBChange
-        Position = 1
-        Align = alTop
-        TabOrder = 0
-      end
     end
-    object ToolsP: TPanel
-      Left = 14
-      Height = 272
-      Top = 14
-      Width = 34
+    object ParamToolP: TPanel
+      Left = 3
+      Height = 205
+      Top = 147
+      Width = 122
+      Align = alClient
+      BorderSpacing.Around = 3
       BevelOuter = bvNone
+      BorderWidth = 1
+      BorderStyle = bsSingle
+      Caption = 'Параметры'
+      Color = clWhite
+      ParentColor = False
       TabOrder = 1
     end
   end
   object MainPB: TPaintBox
     Left = 128
-    Height = 480
+    Height = 355
     Top = 0
     Width = 372
     Align = alClient
@@ -90,6 +74,69 @@ object MainF: TMainF
     OnMouseMove = MainPBMouseMove
     OnMouseUp = MainPBMouseUp
     OnPaint = MainPBPaint
+  end
+  object PaletteP: TPanel
+    Left = 0
+    Height = 125
+    Top = 355
+    Width = 500
+    Align = alBottom
+    BevelOuter = bvNone
+    ClientHeight = 125
+    ClientWidth = 500
+    ParentColor = False
+    TabOrder = 1
+    object PaletteMainP: TPanel
+      Left = 0
+      Height = 125
+      Top = 0
+      Width = 84
+      Align = alLeft
+      BevelOuter = bvNone
+      ClientHeight = 125
+      ClientWidth = 84
+      TabOrder = 0
+      object BrushS: TShape
+        Left = 40
+        Height = 33
+        Top = 47
+        Width = 33
+        OnMouseDown = BrushSMouseDown
+      end
+      object PenS: TShape
+        Left = 16
+        Height = 33
+        Top = 30
+        Width = 33
+        Brush.Color = clBlack
+        OnMouseDown = PenSMouseDown
+      end
+    end
+    object PaletteG: TDrawGrid
+      Left = 86
+      Height = 121
+      Top = 2
+      Width = 321
+      Align = alLeft
+      AutoEdit = False
+      BorderSpacing.Around = 2
+      ColCount = 16
+      DefaultColWidth = 20
+      DefaultRowHeight = 20
+      FixedCols = 16
+      FixedRows = 6
+      Flat = True
+      HeaderHotZones = []
+      HeaderPushZones = []
+      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine]
+      RowCount = 6
+      ScrollBars = ssNone
+      TabOrder = 1
+      TabStop = False
+      OnDblClick = PaletteGDblClick
+      OnDrawCell = PaletteGDrawCell
+      OnMouseDown = PaletteGMouseDown
+    end
   end
   object MainMenu: TMainMenu
     left = 200
