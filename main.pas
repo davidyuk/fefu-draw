@@ -5,8 +5,9 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, Math, FileUtil, Graphics, Forms, Controls, Dialogs, ExtCtrls,
-  Menus, ComCtrls, StdCtrls, Buttons, Grids, TypInfo, DrawTools;
+  Classes, SysUtils, Math, FileUtil, RTTIGrids, Graphics, Forms, Controls,
+  Dialogs, ExtCtrls, Menus, ComCtrls, StdCtrls, Buttons, Grids, TypInfo,
+  DrawTools;
 
 type
 
@@ -16,7 +17,11 @@ type
     ColorDialog: TColorDialog;
     PaletteG: TDrawGrid;
     PaletteP: TPanel;
+    MainP: TPanel;
     ParamToolP: TPanel;
+    ScrollBar1: TScrollBar;
+    ScrollBar2: TScrollBar;
+    TIPropertyGrid: TTIPropertyGrid;
     ToolsL: TLabel;
     ToolsP: TPanel;
     MainMenu: TMainMenu;
@@ -82,8 +87,9 @@ begin
   for i := 0 to high(ToolContainer.tool) do
   begin
     m:= TBitmap.Create;
-    m.LoadFromFile(ToolContainer.Name[i]);
-    b := TSpeedButton.Create(self);
+    m.LoadFromFile('icons/'+ToolContainer.tool[i].ClassName+'.bmp');
+    b := TSpeedButton.Create(ToolsP);
+    b.HelpKeyword:= ToolContainer.tool[i].name;
     b.Name := 'Tool' + IntToStr(i);
     b.Parent := ToolsP;
     b.Glyph := m;
@@ -125,14 +131,14 @@ var
 begin
   b := TSpeedButton(Sender);
   selectedToolId := b.Tag;
+  TIPropertyGrid.TIObject := TPersistent(ToolContainer.tool[selectedToolId].Select);
 end;
 
 procedure TMainF.MainPBMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
   isDrawing := True;
-  ToolContainer.tool[selectedToolId].MDown(Point(X, Y), button, PenS.Brush.Color,
-    BrushS.Brush.Color, 3); {!!!!}
+  ToolContainer.tool[selectedToolId].MDown(Point(X, Y), button);
   MainPB.Invalidate;
 end;
 
@@ -152,7 +158,7 @@ end;
 
 procedure TMainF.MainPBPaint(Sender: TObject);
 begin
-  Scene.drawScene(MainPB.Canvas);
+  Scene.Draw(MainPB.Canvas);
 end;
 
 procedure TMainF.PaletteGMouseDown(Sender: TObject; Button: TMouseButton;

@@ -1,46 +1,46 @@
 object MainF: TMainF
-  Left = 695
-  Height = 500
-  Top = 279
-  Width = 500
+  Left = 1131
+  Height = 555
+  Top = 159
+  Width = 755
   Caption = 'Векторный редактор'
-  ClientHeight = 480
-  ClientWidth = 500
+  ClientHeight = 535
+  ClientWidth = 755
   Color = clWhite
   Menu = MainMenu
   OnCreate = FormCreate
   LCLVersion = '1.0.2.0'
   object LeftP: TPanel
     Left = 0
-    Height = 355
+    Height = 410
     Top = 0
-    Width = 128
+    Width = 240
     Align = alLeft
     BevelOuter = bvNone
-    ClientHeight = 355
-    ClientWidth = 128
+    ClientHeight = 410
+    ClientWidth = 240
     ParentColor = False
     TabOrder = 0
     object ToolsP: TPanel
       Left = 3
       Height = 141
       Top = 3
-      Width = 122
+      Width = 234
       Align = alTop
       BorderSpacing.Around = 3
       BevelOuter = bvNone
       BorderWidth = 1
       BorderStyle = bsSingle
       ClientHeight = 137
-      ClientWidth = 118
+      ClientWidth = 230
       Color = clWhite
       ParentColor = False
       TabOrder = 0
       object ToolsL: TLabel
         Left = 3
-        Height = 16
+        Height = 14
         Top = 3
-        Width = 112
+        Width = 224
         Align = alTop
         BorderSpacing.Around = 2
         Caption = 'Инструменты:'
@@ -49,41 +49,43 @@ object MainF: TMainF
     end
     object ParamToolP: TPanel
       Left = 3
-      Height = 205
+      Height = 260
       Top = 147
-      Width = 122
+      Width = 234
       Align = alClient
       BorderSpacing.Around = 3
       BevelOuter = bvNone
       BorderWidth = 1
       BorderStyle = bsSingle
       Caption = 'Параметры'
+      ClientHeight = 256
+      ClientWidth = 230
       Color = clWhite
       ParentColor = False
       TabOrder = 1
+      object TIPropertyGrid: TTIPropertyGrid
+        Left = 1
+        Height = 254
+        Top = 1
+        Width = 228
+        Align = alClient
+        DefaultValueFont.Color = clWindowText
+        Filter = [tkInteger, tkChar, tkEnumeration, tkFloat, tkSet, tkMethod, tkSString, tkLString, tkAString, tkWString, tkVariant, tkArray, tkRecord, tkInterface, tkClass, tkObject, tkWChar, tkBool, tkInt64, tkQWord, tkDynArray, tkInterfaceRaw, tkProcVar, tkUString, tkUChar, tkHelper]
+        Indent = 16
+        NameFont.Color = clWindowText
+        ValueFont.Color = clMaroon
+      end
     end
-  end
-  object MainPB: TPaintBox
-    Left = 128
-    Height = 355
-    Top = 0
-    Width = 372
-    Align = alClient
-    ParentColor = False
-    OnMouseDown = MainPBMouseDown
-    OnMouseMove = MainPBMouseMove
-    OnMouseUp = MainPBMouseUp
-    OnPaint = MainPBPaint
   end
   object PaletteP: TPanel
     Left = 0
     Height = 125
-    Top = 355
-    Width = 500
+    Top = 410
+    Width = 755
     Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 125
-    ClientWidth = 500
+    ClientWidth = 755
     ParentColor = False
     TabOrder = 1
     object PaletteMainP: TPanel
@@ -123,6 +125,7 @@ object MainF: TMainF
       ColCount = 16
       DefaultColWidth = 20
       DefaultRowHeight = 20
+      ExtendedSelect = False
       FixedCols = 16
       FixedRows = 6
       Flat = True
@@ -138,9 +141,52 @@ object MainF: TMainF
       OnMouseDown = PaletteGMouseDown
     end
   end
+  object ScrollBar2: TScrollBar
+    Left = 738
+    Height = 393
+    Top = 0
+    Width = 17
+    Align = alRight
+    BorderSpacing.Bottom = 17
+    Kind = sbVertical
+    PageSize = 0
+    TabOrder = 2
+  end
+  object MainP: TPanel
+    Left = 240
+    Height = 410
+    Top = 0
+    Width = 498
+    Align = alClient
+    BevelOuter = bvNone
+    ClientHeight = 410
+    ClientWidth = 498
+    TabOrder = 3
+    object ScrollBar1: TScrollBar
+      Left = 0
+      Height = 17
+      Top = 393
+      Width = 498
+      Align = alBottom
+      PageSize = 0
+      TabOrder = 0
+    end
+    object MainPB: TPaintBox
+      Left = 0
+      Height = 393
+      Top = 0
+      Width = 498
+      Align = alClient
+      ParentColor = False
+      OnMouseDown = MainPBMouseDown
+      OnMouseMove = MainPBMouseMove
+      OnMouseUp = MainPBMouseUp
+      OnPaint = MainPBPaint
+    end
+  end
   object MainMenu: TMainMenu
-    left = 200
-    top = 48
+    left = 416
+    top = 72
     object FileMI: TMenuItem
       Caption = 'Файл'
       object ExitMI: TMenuItem
@@ -180,7 +226,7 @@ object MainF: TMainF
       'ColorS=F0FBFF'
       'ColorT=A4A0A0'
     )
-    left = 272
-    top = 48
+    left = 504
+    top = 80
   end
 end

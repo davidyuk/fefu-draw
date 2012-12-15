@@ -5,83 +5,62 @@ unit DrawTools;
 interface
 
 uses
-  Classes, Graphics, DrawShapes, Controls;
+  Classes, Graphics, DrawShapes, Controls, DrawEditors;
 
 type
+
+  { TToolBase }
+
+  TToolBase = class
+  protected
+    n: string;
+  public
+    property name: string read n;
+    procedure MMove(point: TPoint; isDrawing: boolean); virtual; abstract;
+    procedure MDown(point: TPoint; button: TMouseButton); virtual; abstract;
+    procedure MUp(point: TPoint); virtual; abstract;
+    function GetShape:TShapeBase; virtual; abstract;
+    function Select:TShapeBase; virtual; abstract;
+    constructor Create(nName: string); virtual;
+  end;
+
+  { TTShape }
+
+  TTShape = class(TToolBase)
+  protected
+    Shape: TShapeBase;
+    isTemp: boolean;
+  public
+    procedure MMove(point: TPoint; isDrawing: boolean); override;
+    procedure MDown(point: TPoint; button: TMouseButton); override;
+    procedure MUp(point: TPoint); override;
+    function GetShape:TShapeBase; override;
+    function Select:TShapeBase; override;
+    constructor Create(nName: string); override;
+  end;
+
+  ClassOfTool = class of TToolBase;
+  ArrOfTool = array of TToolBase;
+
+  { TToolContainer }
+
+  TToolContainer = class
+  private
+    tArr: array of TToolBase;
+  public
+    procedure addTool(t: ClassOfTool; n: string);
+    property tool: ArrOfTool read tArr;
+  end;
 
   { TScene }
 
   TScene = class
   private
     scene: array of TShapeBase;
+  public
     procedure addShape(shape: TShapeBase);
     function getLast(): TShapeBase;
-  public
-    procedure drawScene(canvas: TCanvas);
-    constructor Create();
-  end;
-
-  { TToolBase }
-
-  TToolBase = class
-  public
-    class procedure MMove(point: TPoint; isDrawing: boolean); virtual;
-    class procedure MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer);
-      virtual; abstract;
-    class procedure MUp(point: TPoint); virtual;
-  end;
-
-  ClassOfTool = class of TToolBase;
-  ArrOfClassOfTool = array of ClassOfTool;
-  ArrOfString = array of string;
-
-  { TToolContainer }
-
-  TToolContainer = class
-  private
-    tools: array of ClassOfTool;
-    names: array of string;
-    procedure addTool(t: ClassOfTool; n: string);
-  public
-    isEdit: boolean;
-    property tool: ArrOfClassOfTool read tools;
-    property name: ArrOfString read names;
-  end;
-
-  { TToolLine }
-
-  TToolLine = class(TToolBase)
-  public
-    class procedure MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer); override;
-  end;
-
-  { TToolRectangle }
-
-  TToolRectangle = class(TToolBase)
-  public
-    class procedure MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer); override;
-  end;
-
-  { TToolEllipse }
-
-  TToolEllipse = class(TToolBase)
-  public
-    class procedure MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer); override;
-  end;
-
-  { TToolFreeHand }
-
-  TToolFreeHand = class(TToolBase)
-  public
-    class procedure MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer); override;
-  end;
-
-  { TToolPolyline }
-
-  TToolPolyline = class(TToolBase)
-  public
-    class procedure MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer); override;
-    class procedure MMove(point: TPoint; isDrawing: boolean); override;
+    procedure Draw(canvas: TCanvas);
   end;
 
 var
@@ -90,67 +69,48 @@ var
 
 implementation
 
-{ TToolPolyline }
+{ TTShape }
 
-class procedure TToolPolyline.MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer);
+procedure TTShape.MMove(point: TPoint; isDrawing: boolean);
 begin
-  If button = mbRight Then begin ToolContainer.isEdit:=false; exit; end;
-  If button = mbLeft Then begin
-    if not ToolContainer.isEdit Then begin
-      Scene.addShape(TShapePolyline.Create(point, penC, brushC, penW));
-      ToolContainer.isEdit:=true;
-    end else
-    If Scene.getLast is TShapePolyline Then
-      Scene.getLast.NewPoint(point);
-  end;
+  if not isDrawing then
+    exit;
+  Scene.getLast.Point(point, false);
 end;
 
-class procedure TToolPolyline.MMove(point: TPoint; isDrawing: boolean);
+procedure TTShape.MDown(point: TPoint; button: TMouseButton);
 begin
-  If ToolContainer.isEdit and (Scene.getLast is TShapePolyline) Then
-    Scene.getLast.EditPoint(point);
+  Scene.addShape(Shape);
+  isTemp:= false;
+  Shape.Point(point);
 end;
 
-{ TToolEllipse }
-
-class procedure TToolEllipse.MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer);
+procedure TTShape.MUp(point: TPoint);
 begin
-  Scene.addShape(TShapeEllipse.Create(point, penC, brushC, penW));
+  //у фигур нечего делать на MouseUp
 end;
 
-{ TToolFreeHand }
-
-class procedure TToolFreeHand.MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer);
+function TTShape.GetShape: TShapeBase;
 begin
-  Scene.addShape(TShapeFreeHand.Create(point, penC, brushC, penW));
+  Result:= Shape;
 end;
 
-{ TToolRectangle }
-
-class procedure TToolRectangle.MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer);
+function TTShape.Select: TShapeBase;
 begin
-  Scene.addShape(TShapeRectangle.Create(point, penC, brushC, penW));
+  Result:= Shape;
 end;
 
-{ TToolLine }
-
-class procedure TToolLine.MDown(point: TPoint; button: TMouseButton; penC, brushC: TColor; penW: integer);
+constructor TTShape.Create(nName: string);
 begin
-  Scene.addShape(TShapeLine.Create(point, penC, brushC, penW));
+  inherited Create(nName);
+  isTemp:= true;
 end;
 
 { TToolBase }
 
-class procedure TToolBase.MMove(point: TPoint; isDrawing: boolean);
+constructor TToolBase.Create(nName: string);
 begin
-  if not isDrawing then
-    exit;
-  Scene.getLast.NewPoint(point);
-end;
-
-class procedure TToolBase.MUp(point: TPoint);
-begin
-  {??}
+  n:= nName;
 end;
 
 { TScene }
@@ -167,7 +127,7 @@ begin
   Result := Scene[high(Scene)];
 end;
 
-procedure TScene.drawScene(canvas: TCanvas);
+procedure TScene.Draw(canvas: TCanvas);
 var
   i: integer;
 begin
@@ -175,28 +135,15 @@ begin
     self.scene[i].Draw(canvas);
 end;
 
-constructor TScene.Create;
-begin
-  setLength(scene, 0);
-end;
-
 { TToolContainer }
 
 procedure TToolContainer.addTool(t: ClassOfTool; n: string);
 begin
-  setLength(tools, length(tools) + 1);
-  tools[high(tools)] := t;
-  setLength(names, length(names) + 1);
-  names[high(names)] := n;
+  setLength(tArr, length(tArr) + 1);
+  tArr[high(tArr)] := t.Create(n);
 end;
 
 initialization
 
-  ToolContainer := TToolContainer.Create;
-  ToolContainer.addTool(TToolFreeHand, 'icons/FreePen.bmp');
-  ToolContainer.addTool(TToolLine, 'icons/Line.bmp');
-  ToolContainer.addTool(TToolRectangle, 'icons/Rectangle.bmp');
-  ToolContainer.addTool(TToolEllipse, 'icons/Ellipse.bmp');
-  ToolContainer.addTool(TToolPolyline, 'icons/Polyline.bmp');
 
 end.
