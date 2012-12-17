@@ -11,68 +11,74 @@ type
   { TTSLine }
 
   TTSLine = class(TTShape)
-    function Select:TShapeBase; override;
+    function CreateShape:TShapeBase; override;
   end;
 
   { TTSRectangle }
 
   TTSRectangle = class(TTShape)
-    function Select:TShapeBase; override;
+    function CreateShape:TShapeBase; override;
   end;
 
   { TTSEllipce }
 
   TTSEllipce = class(TTShape)
-    function Select:TShapeBase; override;
+    function CreateShape:TShapeBase; override;
   end;
 
   { TTSRectangleRound }
 
   TTSRectangleRound = class(TTShape)
-    function Select:TShapeBase; override;
+    function CreateShape:TShapeBase; override;
   end;
 
   { TTSFreeHand }
 
   TTSFreeHand = class(TTShape)
-    function Select:TShapeBase; override;
+    function CreateShape:TShapeBase; override;
     procedure MMove(point: TPoint; isDrawing: boolean); override;
   end;
 
   { TTSPolyline }
 
   TTSPolyline = class(TTShape)
-    function Select:TShapeBase; override;
+    function CreateShape:TShapeBase; override;
     procedure MDown(point: TPoint; button: TMouseButton); override;
+    procedure MUp(point: TPoint); override;
   end;
 
 implementation
 
 { TTSPolyline }
 
-function TTSPolyline.Select: TShapeBase;
+function TTSPolyline.CreateShape: TShapeBase;
 begin
   Shape:= TSMPoint.Create;
-  Result:=inherited Select;
+  Result:=inherited CreateShape;
 end;
 
 procedure TTSPolyline.MDown(point: TPoint; button: TMouseButton);
 begin
   if button = mbRight Then begin isTemp := true; exit; end;
   if isTemp Then begin
-    Shape:= TSMPoint.Create;
+    CreateShape;
     Scene.addShape(Shape);
     isTemp:= false;
   end;
   Shape.Point(point);
 end;
 
+procedure TTSPolyline.MUp(point: TPoint);
+begin
+  //Не нужно создавать новую фигуру
+end;
+
 { TTSFreeHand }
 
-function TTSFreeHand.Select: TShapeBase;
+function TTSFreeHand.CreateShape: TShapeBase;
 begin
   Shape:= TSMPoint.Create;
-  Result:=inherited Select;
+  Result:=inherited CreateShape;
 end;
 
 procedure TTSFreeHand.MMove(point: TPoint; isDrawing: boolean);
@@ -84,34 +90,34 @@ end;
 
 { TTSRectangleRound }
 
-function TTSRectangleRound.Select: TShapeBase;
+function TTSRectangleRound.CreateShape: TShapeBase;
 begin
   Shape :=TS2FRectangleRound.Create;
-  Result:=inherited Select;
+  Result:=inherited CreateShape;
 end;
 
 { TTSEllipce }
 
-function TTSEllipce.Select: TShapeBase;
+function TTSEllipce.CreateShape: TShapeBase;
 begin
   Shape := TS2FEllipce.Create;
-  Result:=inherited Select;
+  Result:=inherited CreateShape;
 end;
 
 { TTSRectangle }
 
-function TTSRectangle.Select: TShapeBase;
+function TTSRectangle.CreateShape: TShapeBase;
 begin
   Shape := TS2FRectangle.Create;
-  Result:=inherited Select;
+  Result:=inherited CreateShape;
 end;
 
 { TTSLine }
 
-function TTSLine.Select: TShapeBase;
+function TTSLine.CreateShape: TShapeBase;
 begin
   Shape := TS2Line.Create;
-  Result := inherited Select;
+  Result := inherited CreateShape;
 end;
 
 initialization

@@ -1,11 +1,11 @@
 unit DrawShapes;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H+}{$M+}
 
 interface
 
 uses
-  Classes, Graphics, FPCanvas, Math;
+  Classes, Graphics, FPCanvas, Math, DrawZoom;
 
 type
 
@@ -19,21 +19,22 @@ type
   public
     procedure Draw(canvas: TCanvas); virtual;
     procedure Point(point: TPoint; new: Boolean = true); virtual; abstract;
-    function BoundingRect:TRect; virtual; abstract;
+    function BoundingRect:TRectReal; virtual; abstract;
   published
     property penC: TColor read pC write pC;
     property penW: Integer read pW write pW;
     property penS: TFPPenStyle read pS write pS;
+    constructor Create; virtual;
   end;
 
   { TS2Point }
 
   TS2Point = class(TShapeBase)
   private
-    p1, p2: TPoint;
+    p1, p2: TPointReal;
   public
     procedure Point(point: TPoint; new: Boolean = true); override;
-    function BoundingRect:TRect; override;
+    function BoundingRect:TRectReal; override;
   end;
 
   { TS2Line }
@@ -52,6 +53,8 @@ type
   published
     property brushC: TColor read bC write bC;
     property brushS: TFPBrushStyle read bS write bS;
+    procedure Draw(canvas: TCanvas); override;
+    constructor Create; override;
   end;
 
   { TS2FRectangle }
@@ -77,20 +80,36 @@ type
     property radius: integer read r write r;
   public
     procedure Draw(canvas: TCanvas); override;
+    constructor Create; override;
   end;
 
   { TSMPoint }
 
   TSMPoint = class(TShapeBase)
   private
-    arr: array of TPoint;
+    arr: array of TPointReal;
   public
     procedure Point(point: TPoint; new: Boolean = true); override;
     procedure Draw(canvas: TCanvas); override;
-    function BoundingRect:TRect; override;
+    function BoundingRect:TRectReal; override;
   end;
 
 implementation
+
+{ TS2Fill }
+
+procedure TS2Fill.Draw(canvas: TCanvas);
+begin
+  inherited Draw(canvas);
+  canvas.Brush.Color:= bC;
+  canvas.Brush.Style:= bS;
+end;
+
+constructor TS2Fill.Create;
+begin
+  inherited Create;
+  bS:= bsSolid;
+end;
 
 { TSMPoint }
 
@@ -111,7 +130,7 @@ begin
   canvas.Polyline(arr);
 end;
 
-function TSMPoint.BoundingRect: TRect;
+function TSMPoint.BoundingRect: TRectReal;
 var i: integer;
 begin
   for i:= 0 to high(arr) do begin
@@ -120,10 +139,6 @@ begin
     If arr[i].Y < Result.Top Then Result.Top:= arr[i].Y;
     If arr[i].Y > Result.Bottom Then Result.Bottom:= arr[i].Y;
   end;
-  Result.TopLeft.x := Result.Left;
-  Result.TopLeft.y := Result.Top;
-  Result.BottomRight.x := Result.Right;
-  Result.BottomRight.y := Result.Bottom;
 end;
 
 { TS2FRectangleRound }
@@ -132,6 +147,12 @@ procedure TS2FRectangleRound.Draw(canvas: TCanvas);
 begin
   inherited Draw(canvas);
   canvas.RoundRect(p1.x, p1.y, p2.x, p2.y, r, r);
+end;
+
+constructor TS2FRectangleRound.Create;
+begin
+  inherited Create;
+  radius:= 1;
 end;
 
 { TS2FEllipce }
@@ -156,6 +177,13 @@ procedure TShapeBase.Draw(canvas: TCanvas);
 begin
   canvas.pen.Color := pC;
   canvas.pen.Width := pW;
+  canvas.pen.Style := pS;
+end;
+
+constructor TShapeBase.Create;
+begin
+  pW:= 1;
+  pS:= psSolid;
 end;
 
 { TS2Line }
@@ -178,16 +206,12 @@ begin
   else p2:= point;
 end;
 
-function TS2Point.BoundingRect: TRect;
+function TS2Point.BoundingRect: TRectReal;
 begin
   Result.Left := Min(p1.x, p2.x);
   Result.Right := Max(p1.x, p2.x);
   Result.Top := Min(p1.y, p2.y);
   Result.Bottom := Max(p1.y, p2.y);
-  Result.TopLeft.x := Result.Left;
-  Result.TopLeft.y := Result.Top;
-  Result.BottomRight.x := Result.Right;
-  Result.BottomRight.y := Result.Bottom;
 end;
 
 end.

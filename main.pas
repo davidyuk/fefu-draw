@@ -5,9 +5,9 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, Math, FileUtil, RTTIGrids, Graphics, Forms, Controls,
+  Classes, SysUtils, Math, FileUtil, Graphics, Forms, Controls,
   Dialogs, ExtCtrls, Menus, ComCtrls, StdCtrls, Buttons, Grids, TypInfo,
-  DrawTools;
+  DrawTools, DrawEditors, DrawZoom;
 
 type
 
@@ -19,9 +19,8 @@ type
     PaletteP: TPanel;
     MainP: TPanel;
     ParamToolP: TPanel;
-    ScrollBar1: TScrollBar;
-    ScrollBar2: TScrollBar;
-    TIPropertyGrid: TTIPropertyGrid;
+    HorizontalSB: TScrollBar;
+    VerticalSB: TScrollBar;
     ToolsL: TLabel;
     ToolsP: TPanel;
     MainMenu: TMainMenu;
@@ -55,8 +54,9 @@ type
     procedure ToolClick(Sender: TObject);
   private
     isDrawing: boolean;
-    selectedToolId, tempNum: integer;
+    selectedToolId: integer;
     paletteColors: array of TColor;
+    paletteCell: TPoint;
   public
 
   end;
@@ -81,8 +81,9 @@ var
   m: TBitMap;
 begin
   Scene := TScene.Create();
+  Viewport.Create(@MainPB.Invalidate);
   //Генерация кнопок
-  selectedToolId := 0; t1:= 0; t2:= 0;
+  t1:= 0; t2:= 0;
   cellInRow:= ToolsP.Width div (toolSide+toolSpace);
   for i := 0 to high(ToolContainer.tool) do
   begin
@@ -95,7 +96,10 @@ begin
     b.Glyph := m;
     b.Flat := True;
     b.GroupIndex := 1;
-    b.Down := i = 0;
+    if i = 0 then begin
+      b.Down:= true;
+      ToolClick(b);
+    end;
     b.Width := toolSide;
     b.Height := toolSide;
     b.Left := (toolSide+toolSpace)*t2;
@@ -131,7 +135,7 @@ var
 begin
   b := TSpeedButton(Sender);
   selectedToolId := b.Tag;
-  TIPropertyGrid.TIObject := TPersistent(ToolContainer.tool[selectedToolId].Select);
+  Inspector.Load(TPersistent(ToolContainer.tool[selectedToolId].CreateShape), ParamToolP);
 end;
 
 procedure TMainF.MainPBMouseDown(Sender: TObject; Button: TMouseButton;
@@ -154,32 +158,43 @@ begin
   isDrawing := False;
   ToolContainer.tool[selectedToolId].MUp(Point(X, Y));
   MainPB.Invalidate;
+  Inspector.Load(TPersistent(ToolContainer.tool[selectedToolId].GetShape), ParamToolP);
 end;
 
 procedure TMainF.MainPBPaint(Sender: TObject);
 begin
   Scene.Draw(MainPB.Canvas);
+  Viewport.ReCalculate(MainPB.Canvas);
 end;
 
 procedure TMainF.PaletteGMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   tCol, tRow: longint;
+  t: integer;
 begin
   PaletteG.MouseToCell(x, y, tCol, tRow);
-  tempNum:= PaletteG.ColCount * tRow + tCol;
-  if Button = mbLeft Then
-    PenS.Brush.Color:= paletteColors[tempNum];
-  if Button = mbRight Then
-    BrushS.Brush.Color:= paletteColors[tempNum];
+  paletteCell.x:=tCol;
+  paletteCell.y:=tRow;
+  t:= PaletteG.ColCount * paletteCell.y + paletteCell.x;
+  if Button = mbLeft Then begin
+    PenS.Brush.Color:= paletteColors[t];
+    Inspector.SetPenColor(PenS.Brush.Color);
+  end;
+  if Button = mbRight Then begin
+    BrushS.Brush.Color:= paletteColors[t];
+    Inspector.SetBrushColor(BrushS.Brush.Color);
+  end;
 end;
 
 procedure TMainF.PenSMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
   ColorDialog.Color := PenS.Brush.Color;
-  if ColorDialog.Execute then
+  if ColorDialog.Execute then begin
     PenS.Brush.Color := ColorDialog.Color;
+    Inspector.SetPenColor(PenS.Brush.Color);
+  end;
 end;
 
 procedure TMainF.ExitMIClick(Sender: TObject);
@@ -197,18 +212,24 @@ procedure TMainF.BrushSMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
   ColorDialog.Color := BrushS.Brush.Color;
-  if ColorDialog.Execute then
+  if ColorDialog.Execute then begin
     BrushS.Brush.Color := ColorDialog.Color;
+    Inspector.SetBrushColor(BrushS.Brush.Color);
+  end;
 end;
 
 procedure TMainF.PaletteGDblClick(Sender: TObject);
+var
+  t: integer;
 begin
-  if not (tempNum in [0..PaletteG.ColCount]) Then exit;
-  ColorDialog.Color := paletteColors[tempNum];
-  if ColorDialog.Execute then
-    paletteColors[tempNum] := ColorDialog.Color;
-  PenS.Brush.Color := paletteColors[tempNum];
-  PaletteG.InvalidateCell(tempNum mod PaletteG.ColCount, tempNum div PaletteG.ColCount);
+  t:= PaletteG.ColCount * paletteCell.y + paletteCell.x;
+  if not (t in [0..PaletteG.ColCount]) Then exit;
+  ColorDialog.Color := paletteColors[t];
+  if not ColorDialog.Execute then exit;
+  paletteColors[t] := ColorDialog.Color;
+  PenS.Brush.Color := paletteColors[t];
+  Inspector.SetPenColor(PenS.Brush.Color);
+  PaletteG.InvalidateCell(paletteCell.x, paletteCell.y);
 end;
 
 procedure TMainF.PaletteGDrawCell(Sender: TObject; aCol, aRow: Integer;

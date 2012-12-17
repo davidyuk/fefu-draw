@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, main, DrawTools, DrawShapes, DrawEditors, runtimetypeinfocontrols,
-  DrawToolsShapes;
+  DrawToolsShapes, DrawZoom;
 
 {$R *.res}
 

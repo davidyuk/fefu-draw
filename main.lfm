@@ -1,7 +1,7 @@
 object MainF: TMainF
-  Left = 1131
+  Left = 410
   Height = 555
-  Top = 159
+  Top = 242
   Width = 755
   Caption = 'Векторный редактор'
   ClientHeight = 535
@@ -14,33 +14,33 @@ object MainF: TMainF
     Left = 0
     Height = 410
     Top = 0
-    Width = 240
+    Width = 176
     Align = alLeft
     BevelOuter = bvNone
     ClientHeight = 410
-    ClientWidth = 240
+    ClientWidth = 176
     ParentColor = False
     TabOrder = 0
     object ToolsP: TPanel
       Left = 3
       Height = 141
       Top = 3
-      Width = 234
+      Width = 170
       Align = alTop
       BorderSpacing.Around = 3
       BevelOuter = bvNone
       BorderWidth = 1
       BorderStyle = bsSingle
       ClientHeight = 137
-      ClientWidth = 230
+      ClientWidth = 166
       Color = clWhite
       ParentColor = False
       TabOrder = 0
       object ToolsL: TLabel
         Left = 3
-        Height = 14
+        Height = 16
         Top = 3
-        Width = 224
+        Width = 160
         Align = alTop
         BorderSpacing.Around = 2
         Caption = 'Инструменты:'
@@ -51,30 +51,15 @@ object MainF: TMainF
       Left = 3
       Height = 260
       Top = 147
-      Width = 234
+      Width = 170
       Align = alClient
       BorderSpacing.Around = 3
       BevelOuter = bvNone
       BorderWidth = 1
       BorderStyle = bsSingle
-      Caption = 'Параметры'
-      ClientHeight = 256
-      ClientWidth = 230
       Color = clWhite
       ParentColor = False
       TabOrder = 1
-      object TIPropertyGrid: TTIPropertyGrid
-        Left = 1
-        Height = 254
-        Top = 1
-        Width = 228
-        Align = alClient
-        DefaultValueFont.Color = clWindowText
-        Filter = [tkInteger, tkChar, tkEnumeration, tkFloat, tkSet, tkMethod, tkSString, tkLString, tkAString, tkWString, tkVariant, tkArray, tkRecord, tkInterface, tkClass, tkObject, tkWChar, tkBool, tkInt64, tkQWord, tkDynArray, tkInterfaceRaw, tkProcVar, tkUString, tkUChar, tkHelper]
-        Indent = 16
-        NameFont.Color = clWindowText
-        ValueFont.Color = clMaroon
-      end
     end
   end
   object PaletteP: TPanel
@@ -141,7 +126,7 @@ object MainF: TMainF
       OnMouseDown = PaletteGMouseDown
     end
   end
-  object ScrollBar2: TScrollBar
+  object VerticalSB: TScrollBar
     Left = 738
     Height = 393
     Top = 0
@@ -153,29 +138,30 @@ object MainF: TMainF
     TabOrder = 2
   end
   object MainP: TPanel
-    Left = 240
+    Left = 176
     Height = 410
     Top = 0
-    Width = 498
+    Width = 562
     Align = alClient
     BevelOuter = bvNone
     ClientHeight = 410
-    ClientWidth = 498
+    ClientWidth = 562
     TabOrder = 3
-    object ScrollBar1: TScrollBar
+    object HorizontalSB: TScrollBar
       Left = 0
       Height = 17
       Top = 393
-      Width = 498
+      Width = 562
       Align = alBottom
-      PageSize = 0
+      PageSize = 50
+      Position = 50
       TabOrder = 0
     end
     object MainPB: TPaintBox
       Left = 0
       Height = 393
       Top = 0
-      Width = 498
+      Width = 562
       Align = alClient
       ParentColor = False
       OnMouseDown = MainPBMouseDown

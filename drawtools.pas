@@ -20,7 +20,7 @@ type
     procedure MDown(point: TPoint; button: TMouseButton); virtual; abstract;
     procedure MUp(point: TPoint); virtual; abstract;
     function GetShape:TShapeBase; virtual; abstract;
-    function Select:TShapeBase; virtual; abstract;
+    function CreateShape:TShapeBase; virtual; abstract;
     constructor Create(nName: string); virtual;
   end;
 
@@ -35,7 +35,7 @@ type
     procedure MDown(point: TPoint; button: TMouseButton); override;
     procedure MUp(point: TPoint); override;
     function GetShape:TShapeBase; override;
-    function Select:TShapeBase; override;
+    function CreateShape:TShapeBase; override;
     constructor Create(nName: string); override;
   end;
 
@@ -52,12 +52,15 @@ type
     property tool: ArrOfTool read tArr;
   end;
 
+  ArrOfShape = array of TShapeBase;
+
   { TScene }
 
   TScene = class
   private
-    scene: array of TShapeBase;
+    scene: ArrOfShape;
   public
+    property Shapes: ArrOfShape read scene;
     procedure addShape(shape: TShapeBase);
     function getLast(): TShapeBase;
     procedure Draw(canvas: TCanvas);
@@ -87,7 +90,7 @@ end;
 
 procedure TTShape.MUp(point: TPoint);
 begin
-  //у фигур нечего делать на MouseUp
+  CreateShape;
 end;
 
 function TTShape.GetShape: TShapeBase;
@@ -95,7 +98,7 @@ begin
   Result:= Shape;
 end;
 
-function TTShape.Select: TShapeBase;
+function TTShape.CreateShape:TShapeBase;
 begin
   Result:= Shape;
 end;
