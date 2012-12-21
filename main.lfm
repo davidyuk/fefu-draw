@@ -1,12 +1,11 @@
 object MainF: TMainF
   Left = 410
   Height = 555
-  Top = 242
+  Top = 150
   Width = 755
   Caption = 'Векторный редактор'
   ClientHeight = 535
   ClientWidth = 755
-  Color = clWhite
   Menu = MainMenu
   OnCreate = FormCreate
   LCLVersion = '1.0.2.0'
@@ -134,8 +133,10 @@ object MainF: TMainF
     Align = alRight
     BorderSpacing.Bottom = 17
     Kind = sbVertical
-    PageSize = 0
+    Max = 999
+    PageSize = 999
     TabOrder = 2
+    OnScroll = VerticalSBScroll
   end
   object MainP: TPanel
     Left = 176
@@ -153,9 +154,10 @@ object MainF: TMainF
       Top = 393
       Width = 562
       Align = alBottom
-      PageSize = 50
-      Position = 50
+      Max = 999
+      PageSize = 999
       TabOrder = 0
+      OnScroll = HorizontalSBScroll
     end
     object MainPB: TPaintBox
       Left = 0
@@ -163,10 +165,12 @@ object MainF: TMainF
       Top = 0
       Width = 562
       Align = alClient
+      Color = clWhite
       ParentColor = False
       OnMouseDown = MainPBMouseDown
       OnMouseMove = MainPBMouseMove
       OnMouseUp = MainPBMouseUp
+      OnMouseWheel = MainPBMouseWheel
       OnPaint = MainPBPaint
     end
   end
@@ -178,6 +182,13 @@ object MainF: TMainF
       object ExitMI: TMenuItem
         Caption = 'Выход'
         OnClick = ExitMIClick
+      end
+    end
+    object ViewMI: TMenuItem
+      Caption = 'Вид'
+      object FillMI: TMenuItem
+        Caption = 'По размеру экрана'
+        OnClick = FillMIClick
       end
     end
     object HelpMI: TMenuItem

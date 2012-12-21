@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Math, FileUtil, Graphics, Forms, Controls,
-  Dialogs, ExtCtrls, Menus, ComCtrls, StdCtrls, Buttons, Grids, TypInfo,
-  DrawTools, DrawEditors, DrawZoom;
+  Dialogs, ExtCtrls, Menus, ComCtrls, StdCtrls, Buttons, Grids, Spin, TypInfo,
+  DrawTools, DrawEditors, DrawZoom, types;
 
 type
 
@@ -15,6 +15,8 @@ type
 
   TMainF = class(TForm)
     ColorDialog: TColorDialog;
+    ViewMI: TMenuItem;
+    FillMI: TMenuItem;
     PaletteG: TDrawGrid;
     PaletteP: TPanel;
     MainP: TPanel;
@@ -36,6 +38,11 @@ type
     procedure AboutMIClick(Sender: TObject);
     procedure BrushSMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
+    procedure FillMIClick(Sender: TObject);
+    procedure HorizontalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
+      var ScrollPos: Integer);
+    procedure MainPBMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure PaletteGDblClick(Sender: TObject);
     procedure PaletteGDrawCell(Sender: TObject; aCol, aRow: Integer;
       aRect: TRect; aState: TGridDrawState);
@@ -52,6 +59,8 @@ type
     procedure PenSMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
     procedure ToolClick(Sender: TObject);
+    procedure VerticalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
+      var ScrollPos: Integer);
   private
     isDrawing: boolean;
     selectedToolId: integer;
@@ -81,7 +90,7 @@ var
   m: TBitMap;
 begin
   Scene := TScene.Create();
-  Viewport.Create(@MainPB.Invalidate);
+  VP := TViewport.Create(@MainPB.Invalidate);
   //Генерация кнопок
   t1:= 0; t2:= 0;
   cellInRow:= ToolsP.Width div (toolSide+toolSpace);
@@ -135,7 +144,14 @@ var
 begin
   b := TSpeedButton(Sender);
   selectedToolId := b.Tag;
-  Inspector.Load(TPersistent(ToolContainer.tool[selectedToolId].CreateShape), ParamToolP);
+  Inspector.Load(TPersistent(ToolContainer.tool[selectedToolId].CreateParamObj), ParamToolP);
+end;
+
+procedure TMainF.VerticalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
+  var ScrollPos: Integer);
+begin
+  if (VerticalSB.Position+VerticalSB.PageSize) > VerticalSB.Max Then exit;;
+  VP.SetSb(Point(0,VerticalSB.Position));
 end;
 
 procedure TMainF.MainPBMouseDown(Sender: TObject; Button: TMouseButton;
@@ -158,13 +174,16 @@ begin
   isDrawing := False;
   ToolContainer.tool[selectedToolId].MUp(Point(X, Y));
   MainPB.Invalidate;
-  Inspector.Load(TPersistent(ToolContainer.tool[selectedToolId].GetShape), ParamToolP);
+  Inspector.Load(TPersistent(ToolContainer.tool[selectedToolId].GetParamObj), ParamToolP);
 end;
 
 procedure TMainF.MainPBPaint(Sender: TObject);
 begin
+  MainPB.Canvas.Brush.Color:= clWhite;
+  MainPB.Canvas.Brush.Style:= bsSolid;
+  MainPB.Canvas.FillRect(0,0,MainPB.Width, MainPB.Height);
   Scene.Draw(MainPB.Canvas);
-  Viewport.ReCalculate(MainPB.Canvas);
+  VP.ReCalculate(MainPB, HorizontalSB, VerticalSB);
 end;
 
 procedure TMainF.PaletteGMouseDown(Sender: TObject; Button: TMouseButton;
@@ -216,6 +235,24 @@ begin
     BrushS.Brush.Color := ColorDialog.Color;
     Inspector.SetBrushColor(BrushS.Brush.Color);
   end;
+end;
+
+procedure TMainF.FillMIClick(Sender: TObject);
+begin
+  VP.ScaleTo(Point(0,0), Point(0,0));
+end;
+
+procedure TMainF.HorizontalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
+  var ScrollPos: Integer);
+begin
+  if (HorizontalSB.Position+HorizontalSB.PageSize) > HorizontalSB.Max Then exit;;
+  VP.SetSb(Point(HorizontalSB.Position, 0));
+end;
+
+procedure TMainF.MainPBMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+  VP.ScaleMouseWhell(MousePos, WheelDelta>0);
 end;
 
 procedure TMainF.PaletteGDblClick(Sender: TObject);

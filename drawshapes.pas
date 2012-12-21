@@ -31,7 +31,13 @@ type
 
   TS2Point = class(TShapeBase)
   private
-    p1, p2: TPointReal;
+    p1r, p2r: TPointReal;
+    function p1read:TPoint;
+    function p2read:TPoint;
+    procedure p1write(p: TPoint);
+    procedure p2write(p: TPoint);
+    property p1: TPoint read p1read write p1write;
+    property p2: TPoint read p2read write p2write;
   public
     procedure Point(point: TPoint; new: Boolean = true); override;
     function BoundingRect:TRectReal; override;
@@ -50,11 +56,12 @@ type
   private
     bC: TColor;
     bS: TFPBrushStyle;
+  public
+    procedure Draw(canvas: TCanvas); override;
+    constructor Create; override;
   published
     property brushC: TColor read bC write bC;
     property brushS: TFPBrushStyle read bS write bS;
-    procedure Draw(canvas: TCanvas); override;
-    constructor Create; override;
   end;
 
   { TS2FRectangle }
@@ -87,7 +94,7 @@ type
 
   TSMPoint = class(TShapeBase)
   private
-    arr: array of TPointReal;
+    points: array of TPointReal;
   public
     procedure Point(point: TPoint; new: Boolean = true); override;
     procedure Draw(canvas: TCanvas); override;
@@ -116,28 +123,38 @@ end;
 procedure TSMPoint.Point(point: TPoint; new: Boolean);
 begin
   if new then begin
-    setLength(arr, length(arr)+1);
-    arr[high(arr)]:= point;
+    setLength(points, length(points)+1);
+    points[high(points)]:= VP.StoW(point);
   end else begin
-    if length(arr) = 1 Then setLength(arr, 2);
-    arr[high(arr)]:= point;
+    if length(points) = 1 Then setLength(points, 2);
+    points[high(points)]:= VP.StoW(point);
   end;
 end;
 
 procedure TSMPoint.Draw(canvas: TCanvas);
+var i: integer;
 begin
   inherited Draw(canvas);
-  canvas.Polyline(arr);
+  canvas.MoveTo(VP.WtoS(points[0])); //может стоит проверить есть-ли в массиве элементы
+  for i:= 0 to high(points) do
+    canvas.LineTo(VP.WtoS(points[i]));
 end;
 
 function TSMPoint.BoundingRect: TRectReal;
 var i: integer;
 begin
-  for i:= 0 to high(arr) do begin
-    If arr[i].X < Result.Left Then Result.Left:= arr[i].X;
-    If arr[i].X > Result.Right Then Result.Right:= arr[i].X;
-    If arr[i].Y < Result.Top Then Result.Top:= arr[i].Y;
-    If arr[i].Y > Result.Bottom Then Result.Bottom:= arr[i].Y;
+  for i:= 0 to high(points) do begin
+    if i = 0 then begin
+      Result.Left:= points[i].X;
+      Result.Right:= points[i].X;
+      Result.Top:= points[i].Y;
+      Result.Bottom:= points[i].Y;
+      Continue;
+    end;
+    If points[i].X < Result.Left Then Result.Left:= points[i].X;
+    If points[i].X > Result.Right Then Result.Right:= points[i].X;
+    If points[i].Y < Result.Top Then Result.Top:= points[i].Y;
+    If points[i].Y > Result.Bottom Then Result.Bottom:= points[i].Y;
   end;
 end;
 
@@ -197,6 +214,26 @@ end;
 
 { TS2Point }
 
+function TS2Point.p1read: TPoint;
+begin
+  result:= VP.WtoS(p1r);
+end;
+
+function TS2Point.p2read: TPoint;
+begin
+  result:= VP.WtoS(p2r);
+end;
+
+procedure TS2Point.p1write(p: TPoint);
+begin
+  p1r:= VP.StoW(p);
+end;
+
+procedure TS2Point.p2write(p: TPoint);
+begin
+  p2r:= VP.StoW(p);
+end;
+
 procedure TS2Point.Point(point: TPoint; new: Boolean);
 begin
   if new then begin
@@ -208,10 +245,10 @@ end;
 
 function TS2Point.BoundingRect: TRectReal;
 begin
-  Result.Left := Min(p1.x, p2.x);
-  Result.Right := Max(p1.x, p2.x);
-  Result.Top := Min(p1.y, p2.y);
-  Result.Bottom := Max(p1.y, p2.y);
+  Result.Left := Min(p1r.x, p2r.x);
+  Result.Right := Max(p1r.x, p2r.x);
+  Result.Top := Min(p1r.y, p2r.y);
+  Result.Bottom := Max(p1r.y, p2r.y);
 end;
 
 end.

@@ -38,7 +38,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="8">
       <Unit0>
         <Filename Value="draw.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -77,6 +77,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="DrawZoom"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="drawtoolszoom.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DrawToolsZoom"/>
+      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

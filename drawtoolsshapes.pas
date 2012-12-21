@@ -5,44 +5,44 @@ unit DrawToolsShapes;
 interface
 
 uses
-  Classes, SysUtils, DrawShapes, DrawTools, Controls;
+  Classes, SysUtils, DrawShapes, Controls, DrawTools;
 
 type
   { TTSLine }
 
   TTSLine = class(TTShape)
-    function CreateShape:TShapeBase; override;
+    function CreateParamObj:TPersistent; override;
   end;
 
   { TTSRectangle }
 
   TTSRectangle = class(TTShape)
-    function CreateShape:TShapeBase; override;
+    function CreateParamObj:TPersistent; override;
   end;
 
   { TTSEllipce }
 
   TTSEllipce = class(TTShape)
-    function CreateShape:TShapeBase; override;
+    function CreateParamObj:TPersistent; override;
   end;
 
   { TTSRectangleRound }
 
   TTSRectangleRound = class(TTShape)
-    function CreateShape:TShapeBase; override;
+    function CreateParamObj:TPersistent; override;
   end;
 
   { TTSFreeHand }
 
   TTSFreeHand = class(TTShape)
-    function CreateShape:TShapeBase; override;
+    function CreateParamObj:TPersistent; override;
     procedure MMove(point: TPoint; isDrawing: boolean); override;
   end;
 
   { TTSPolyline }
 
   TTSPolyline = class(TTShape)
-    function CreateShape:TShapeBase; override;
+    function CreateParamObj:TPersistent; override;
     procedure MDown(point: TPoint; button: TMouseButton); override;
     procedure MUp(point: TPoint); override;
   end;
@@ -51,17 +51,17 @@ implementation
 
 { TTSPolyline }
 
-function TTSPolyline.CreateShape: TShapeBase;
+function TTSPolyline.CreateParamObj: TPersistent;
 begin
   Shape:= TSMPoint.Create;
-  Result:=inherited CreateShape;
+  Result:=inherited CreateParamObj;
 end;
 
 procedure TTSPolyline.MDown(point: TPoint; button: TMouseButton);
 begin
   if button = mbRight Then begin isTemp := true; exit; end;
   if isTemp Then begin
-    CreateShape;
+    CreateParamObj;
     Scene.addShape(Shape);
     isTemp:= false;
   end;
@@ -75,10 +75,10 @@ end;
 
 { TTSFreeHand }
 
-function TTSFreeHand.CreateShape: TShapeBase;
+function TTSFreeHand.CreateParamObj: TPersistent;
 begin
   Shape:= TSMPoint.Create;
-  Result:=inherited CreateShape;
+  Result:=inherited CreateParamObj;
 end;
 
 procedure TTSFreeHand.MMove(point: TPoint; isDrawing: boolean);
@@ -90,44 +90,44 @@ end;
 
 { TTSRectangleRound }
 
-function TTSRectangleRound.CreateShape: TShapeBase;
+function TTSRectangleRound.CreateParamObj: TPersistent;
 begin
   Shape :=TS2FRectangleRound.Create;
-  Result:=inherited CreateShape;
+  Result:=inherited CreateParamObj;
 end;
 
 { TTSEllipce }
 
-function TTSEllipce.CreateShape: TShapeBase;
+function TTSEllipce.CreateParamObj: TPersistent;
 begin
   Shape := TS2FEllipce.Create;
-  Result:=inherited CreateShape;
+  Result:=inherited CreateParamObj;
 end;
 
 { TTSRectangle }
 
-function TTSRectangle.CreateShape: TShapeBase;
+function TTSRectangle.CreateParamObj: TPersistent;
 begin
   Shape := TS2FRectangle.Create;
-  Result:=inherited CreateShape;
+  Result:=inherited CreateParamObj;
 end;
 
 { TTSLine }
 
-function TTSLine.CreateShape: TShapeBase;
+function TTSLine.CreateParamObj: TPersistent;
 begin
   Shape := TS2Line.Create;
-  Result := inherited CreateShape;
+  Result := inherited CreateParamObj;
 end;
 
 initialization
-  ToolContainer := TToolContainer.Create;
-  ToolContainer.addTool(TTSFreeHand, 'Карандаш');
-  ToolContainer.addTool(TTSLine, 'Линия');
-  ToolContainer.addTool(TTSRectangle, 'Прямоугольник');
-  ToolContainer.addTool(TTSRectangleRound, 'Прямоугольник со скруглёнными углами');
-  ToolContainer.addTool(TTSEllipce, 'Эллипс');
-  ToolContainer.addTool(TTSPolyline, 'Ломоная');
+
+ToolContainer.addTool(TTSFreeHand,'Карандаш');
+ToolContainer.addTool(TTSLine,'Линия');
+ToolContainer.addTool(TTSRectangle,'Прямоугольник');
+ToolContainer.addTool(TTSEllipce,'Эллипс');
+ToolContainer.addTool(TTSRectangleRound,'Прямоугольник со скругленными углами');
+ToolContainer.addTool(TTSPolyline,'Ломоная');
 
 end.
 

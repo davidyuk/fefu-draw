@@ -19,8 +19,8 @@ type
     procedure MMove(point: TPoint; isDrawing: boolean); virtual; abstract;
     procedure MDown(point: TPoint; button: TMouseButton); virtual; abstract;
     procedure MUp(point: TPoint); virtual; abstract;
-    function GetShape:TShapeBase; virtual; abstract;
-    function CreateShape:TShapeBase; virtual; abstract;
+    function GetParamObj:TPersistent; virtual; abstract;
+    function CreateParamObj:TPersistent; virtual; abstract;
     constructor Create(nName: string); virtual;
   end;
 
@@ -34,8 +34,8 @@ type
     procedure MMove(point: TPoint; isDrawing: boolean); override;
     procedure MDown(point: TPoint; button: TMouseButton); override;
     procedure MUp(point: TPoint); override;
-    function GetShape:TShapeBase; override;
-    function CreateShape:TShapeBase; override;
+    function GetParamObj:TPersistent; override;
+    function CreateParamObj:TPersistent; override;
     constructor Create(nName: string); override;
   end;
 
@@ -63,6 +63,7 @@ type
     property Shapes: ArrOfShape read scene;
     procedure addShape(shape: TShapeBase);
     function getLast(): TShapeBase;
+    procedure delLastShape;
     procedure Draw(canvas: TCanvas);
   end;
 
@@ -71,7 +72,6 @@ var
   Scene: TScene;
 
 implementation
-
 { TTShape }
 
 procedure TTShape.MMove(point: TPoint; isDrawing: boolean);
@@ -90,17 +90,17 @@ end;
 
 procedure TTShape.MUp(point: TPoint);
 begin
-  CreateShape;
+  CreateParamObj;
 end;
 
-function TTShape.GetShape: TShapeBase;
+function TTShape.GetParamObj: TPersistent;
 begin
-  Result:= Shape;
+  Result:= TPersistent(Shape);
 end;
 
-function TTShape.CreateShape:TShapeBase;
+function TTShape.CreateParamObj:TPersistent;
 begin
-  Result:= Shape;
+  Result:= TPersistent(Shape);
 end;
 
 constructor TTShape.Create(nName: string);
@@ -130,6 +130,11 @@ begin
   Result := Scene[high(Scene)];
 end;
 
+procedure TScene.delLastShape;
+begin
+  setLength(scene, length(scene)-1);
+end;
+
 procedure TScene.Draw(canvas: TCanvas);
 var
   i: integer;
@@ -148,5 +153,6 @@ end;
 
 initialization
 
+ToolContainer := TToolContainer.Create;
 
 end.

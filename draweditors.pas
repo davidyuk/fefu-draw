@@ -5,7 +5,7 @@ unit DrawEditors;
 interface
 
 uses
-  Classes, Dialogs, typinfo, LCLType , Graphics , SysUtils, Spin, ExtCtrls, StdCtrls, DrawShapes, Controls, FPCanvas;
+  Classes, typinfo, LCLType , Graphics , SysUtils, Spin, ExtCtrls, StdCtrls, DrawShapes, Controls, FPCanvas;
 
 type
 
@@ -17,8 +17,8 @@ type
     obj: TPersistent;
     prop: PPropInfo;
   public
-    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel); virtual;
     destructor Destroy; override;
+    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel); virtual;
   end;
 
   { TInspector }
@@ -32,6 +32,7 @@ type
     procedure Load(nObj: TPersistent; panel: TPanel);
     procedure SetPenColor(color: TColor);
     procedure SetBrushColor(color: TColor);
+    constructor Create;
   end;
 
 var
@@ -48,7 +49,30 @@ type
     spin: TSpinEdit;
     procedure spinChange(Sender: TObject);
   public
-    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel); override;
+    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel);
+    destructor Destroy; override;
+  end;
+
+  { TIEFloat }
+
+  TIEFloat = class(TIEditor)
+  private
+    spin: TFloatSpinEdit;
+    pc: boolean;
+    procedure spinChange(Sender: TObject);
+  public
+    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel);
+    destructor Destroy; override;
+  end;
+
+  { TIEScale }
+
+  TIEScale = class(TIEditor)
+  private
+    cmbbox: TComboBox;
+    procedure cmbboxChange(Sender: TObject);
+  public
+    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel);
     destructor Destroy; override;
   end;
 
@@ -61,7 +85,7 @@ type
   ARect: TRect; State: TOwnerDrawState);
     procedure cmbboxChange(Sender: TObject);
   public
-    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel); override;
+    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel);
     destructor Destroy; override;
   end;
 
@@ -74,16 +98,81 @@ type
   ARect: TRect; State: TOwnerDrawState);
     procedure cmbboxChange(Sender: TObject);
   public
-    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel); override;
+    constructor Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel);
     destructor Destroy; override;
   end;
 
+
+
 const
   margin = 2;
-  ratio = 2/3;
+  ratio = 9/14;
 
 var
   PropNames : TStringList; //содержит исправления имён полей фигур
+
+{ TIEScale }
+
+procedure TIEScale.cmbboxChange(Sender: TObject);
+var t: real;
+begin
+  t:= StrToFloatDef(TComboBox(Sender).Text, 100)/100;
+  if t <= 0 then t:= 100;
+  SetFloatProp(obj, prop, t);
+end;
+
+constructor TIEScale.Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel);
+begin
+  cmbbox := TComboBox.Create(panel);
+  cmbbox.text := floatToStr(GetFloatProp(nObj, nProp)*100);
+  cmbbox.AddItem('50',nil);
+  cmbbox.AddItem('100',nil);
+  cmbbox.AddItem('200',nil);
+  cmbbox.AddItem('300',nil);
+  cmbbox.parent:= panel;
+  cmbbox.Left:= trunc(panel.width * ratio) + margin;
+  cmbbox.width:= trunc(panel.Width * (1-ratio)) - margin*2;
+  cmbbox.OnChange := @cmbboxChange;
+  cmbbox.Top:= panel.tag;
+  inherited Create(nObj, nProp, panel);
+end;
+
+destructor TIEScale.Destroy;
+begin
+  cmbbox.Destroy;
+  inherited Destroy;
+end;
+
+{ TIEFloat }
+
+procedure TIEFloat.spinChange(Sender: TObject);
+var t: Real;
+begin
+  t:= TFloatSpinEdit(Sender).Value;
+  if pc then t:= t/100;
+  SetFloatProp(obj, prop, t);
+end;
+
+constructor TIEFloat.Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel);
+begin
+  spin := TFloatSpinEdit.Create(nil);
+  spin.Increment := 1;
+  spin.MinValue := -10000;
+  spin.MaxValue := 10000;
+  spin.value := GetFloatProp(nObj, nProp);
+  spin.parent:= panel;
+  spin.Left:= trunc(panel.width * ratio) + margin;
+  spin.width:= trunc(panel.Width * (1-ratio)) - margin*2;
+  spin.OnChange := @spinChange;
+  spin.Top:= panel.tag;
+  inherited Create(nObj, nProp, panel);
+end;
+
+destructor TIEFloat.Destroy;
+begin
+  spin.Destroy;
+  inherited Destroy;
+end;
 
 { TIEBrushStyle }
 
@@ -211,6 +300,8 @@ end;
 { TIEditor }
 
 constructor TIEditor.Create(nObj: TPersistent; nProp: PPropInfo; panel: TPanel);
+const
+  lblTopMatgin = 4;
 begin
   obj:= nObj;
   prop:= nProp;
@@ -219,7 +310,7 @@ begin
   lbl.Caption:= PropNames.Values[nProp^.Name];
   lbl.Left:= margin;
   lbl.Width := trunc(panel.width * ratio) - margin*2;
-  lbl.Top:= panel.tag;
+  lbl.Top:= panel.tag+lblTopMatgin;
   if lbl.Caption = '' Then lbl.Caption := nProp^.Name;
   panel.tag := panel.tag + 25;
 end;
@@ -239,6 +330,7 @@ begin
   for i:= 0 to high(editors) do
     editors[i].Destroy;
   setLength(editors, 0);
+  if nObj = nil then exit;
   obj:= nObj;
   panel.caption:= '';
   panel.tag := 0;
@@ -248,6 +340,11 @@ begin
       'LongInt': begin
         SetLength(editors, length(editors)+1);
         editors[high(editors)]:= TIEInteger.Create(nObj,list^[i],panel);
+      end;
+      'Real': begin
+        SetLength(editors, length(editors)+1);
+        editors[high(editors)]:= TIEScale.Create(nObj,list^[i],panel);
+        //editors[high(editors)]:= TIEFloat.Create(nObj,list^[i],panel);
       end;
       'TFPPenStyle': begin
         SetLength(editors, length(editors)+1);
@@ -289,17 +386,25 @@ begin
   end;
 end;
 
+constructor TInspector.Create;
+begin
+  penC:= clBlack;
+  brushC:= clWhite;
+end;
+
 initialization
 
 Inspector:= TInspector.Create;
 
 PropNames := TStringList.Create;
+
 PropNames.Values['brushC']:='Цвет заливки';
 PropNames.Values['brushS']:='Вид заливки';
 PropNames.Values['penW']:='Толщина пера';
 PropNames.Values['penC']:='Цвет пера';
 PropNames.Values['penS']:='Вид пера';
 PropNames.Values['radius']:='Радиус скругления';
+PropNames.Values['scale']:='Масштаб (%)';
 
 end.
 
