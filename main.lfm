@@ -1,7 +1,7 @@
 object MainF: TMainF
-  Left = 410
+  Left = 291
   Height = 555
-  Top = 150
+  Top = 87
   Width = 755
   Caption = 'Векторный редактор'
   ClientHeight = 535
@@ -13,25 +13,25 @@ object MainF: TMainF
     Left = 0
     Height = 410
     Top = 0
-    Width = 176
+    Width = 208
     Align = alLeft
     BevelOuter = bvNone
     ClientHeight = 410
-    ClientWidth = 176
+    ClientWidth = 208
     ParentColor = False
     TabOrder = 0
     object ToolsP: TPanel
       Left = 3
       Height = 141
       Top = 3
-      Width = 170
+      Width = 202
       Align = alTop
       BorderSpacing.Around = 3
       BevelOuter = bvNone
       BorderWidth = 1
       BorderStyle = bsSingle
       ClientHeight = 137
-      ClientWidth = 166
+      ClientWidth = 198
       Color = clWhite
       ParentColor = False
       TabOrder = 0
@@ -39,7 +39,7 @@ object MainF: TMainF
         Left = 3
         Height = 16
         Top = 3
-        Width = 160
+        Width = 192
         Align = alTop
         BorderSpacing.Around = 2
         Caption = 'Инструменты:'
@@ -50,7 +50,7 @@ object MainF: TMainF
       Left = 3
       Height = 260
       Top = 147
-      Width = 170
+      Width = 202
       Align = alClient
       BorderSpacing.Around = 3
       BevelOuter = bvNone
@@ -136,34 +136,37 @@ object MainF: TMainF
     Max = 999
     PageSize = 999
     TabOrder = 2
+    Visible = False
     OnScroll = VerticalSBScroll
   end
   object MainP: TPanel
-    Left = 176
+    Left = 208
     Height = 410
     Top = 0
-    Width = 562
+    Width = 530
     Align = alClient
     BevelOuter = bvNone
     ClientHeight = 410
-    ClientWidth = 562
+    ClientWidth = 530
     TabOrder = 3
     object HorizontalSB: TScrollBar
       Left = 0
       Height = 17
       Top = 393
-      Width = 562
+      Width = 530
       Align = alBottom
+      Enabled = False
       Max = 999
       PageSize = 999
       TabOrder = 0
+      Visible = False
       OnScroll = HorizontalSBScroll
     end
     object MainPB: TPaintBox
       Left = 0
       Height = 393
       Top = 0
-      Width = 562
+      Width = 530
       Align = alClient
       Color = clWhite
       ParentColor = False

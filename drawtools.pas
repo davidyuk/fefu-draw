@@ -16,9 +16,9 @@ type
     n: string;
   public
     property name: string read n;
-    procedure MMove(point: TPoint; isDrawing: boolean); virtual; abstract;
-    procedure MDown(point: TPoint; button: TMouseButton); virtual; abstract;
-    procedure MUp(point: TPoint); virtual; abstract;
+    procedure MMove(point: TPoint; isDrawing: boolean; shift: TShiftState); virtual; abstract;
+    procedure MDown(point: TPoint; shift: TShiftState); virtual; abstract;
+    procedure MUp(point: TPoint; shift: TShiftState); virtual; abstract;
     function GetParamObj:TPersistent; virtual; abstract;
     function CreateParamObj:TPersistent; virtual; abstract;
     constructor Create(nName: string); virtual;
@@ -31,9 +31,9 @@ type
     Shape: TShapeBase;
     isTemp: boolean;
   public
-    procedure MMove(point: TPoint; isDrawing: boolean); override;
-    procedure MDown(point: TPoint; button: TMouseButton); override;
-    procedure MUp(point: TPoint); override;
+    procedure MMove(point: TPoint; isDrawing: boolean; shift: TShiftState); override;
+    procedure MDown(point: TPoint; shift: TShiftState); override;
+    procedure MUp(point: TPoint; shift: TShiftState); override;
     function GetParamObj:TPersistent; override;
     function CreateParamObj:TPersistent; override;
     constructor Create(nName: string); override;
@@ -74,21 +74,21 @@ var
 implementation
 { TTShape }
 
-procedure TTShape.MMove(point: TPoint; isDrawing: boolean);
+procedure TTShape.MMove(point: TPoint; isDrawing: boolean; shift: TShiftState);
 begin
   if not isDrawing then
     exit;
-  Scene.getLast.Point(point, false);
+  Shape.Point(point, false);
 end;
 
-procedure TTShape.MDown(point: TPoint; button: TMouseButton);
+procedure TTShape.MDown(point: TPoint; shift: TShiftState);
 begin
   Scene.addShape(Shape);
   isTemp:= false;
   Shape.Point(point);
 end;
 
-procedure TTShape.MUp(point: TPoint);
+procedure TTShape.MUp(point: TPoint; shift: TShiftState);
 begin
   CreateParamObj;
 end;
@@ -100,13 +100,13 @@ end;
 
 function TTShape.CreateParamObj:TPersistent;
 begin
+  isTemp:= true;
   Result:= TPersistent(Shape);
 end;
 
 constructor TTShape.Create(nName: string);
 begin
   inherited Create(nName);
-  isTemp:= true;
 end;
 
 { TToolBase }

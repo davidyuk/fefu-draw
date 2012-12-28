@@ -36,15 +36,15 @@ type
 
   TTSFreeHand = class(TTShape)
     function CreateParamObj:TPersistent; override;
-    procedure MMove(point: TPoint; isDrawing: boolean); override;
+    procedure MMove(point: TPoint; isDrawing: boolean; shift: TShiftState); override;
   end;
 
   { TTSPolyline }
 
   TTSPolyline = class(TTShape)
     function CreateParamObj:TPersistent; override;
-    procedure MDown(point: TPoint; button: TMouseButton); override;
-    procedure MUp(point: TPoint); override;
+    procedure MDown(point: TPoint; shift: TShiftState); override;
+    procedure MUp(point: TPoint; shift: TShiftState); override;
   end;
 
 implementation
@@ -57,18 +57,17 @@ begin
   Result:=inherited CreateParamObj;
 end;
 
-procedure TTSPolyline.MDown(point: TPoint; button: TMouseButton);
+procedure TTSPolyline.MDown(point: TPoint; shift: TShiftState);
 begin
-  if button = mbRight Then begin isTemp := true; exit; end;
+  if ssRight in Shift Then begin isTemp := true; exit; end;
   if isTemp Then begin
-    CreateParamObj;
     Scene.addShape(Shape);
     isTemp:= false;
   end;
   Shape.Point(point);
 end;
 
-procedure TTSPolyline.MUp(point: TPoint);
+procedure TTSPolyline.MUp(point: TPoint; shift: TShiftState);
 begin
   //Не нужно создавать новую фигуру
 end;
@@ -81,7 +80,8 @@ begin
   Result:=inherited CreateParamObj;
 end;
 
-procedure TTSFreeHand.MMove(point: TPoint; isDrawing: boolean);
+procedure TTSFreeHand.MMove(point: TPoint; isDrawing: boolean;
+  shift: TShiftState);
 begin
   if not isDrawing then
     exit;

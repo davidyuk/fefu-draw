@@ -67,7 +67,7 @@ type
     paletteColors: array of TColor;
     paletteCell: TPoint;
   public
-
+    PBInvalidate: procedure of object;
   end;
 
 var
@@ -89,8 +89,9 @@ var
   b: TSpeedButton;
   m: TBitMap;
 begin
+  PBInvalidate := @MainPB.Invalidate;
   Scene := TScene.Create();
-  VP := TViewport.Create(@MainPB.Invalidate);
+  VP := TViewport.Create();
   //Генерация кнопок
   t1:= 0; t2:= 0;
   cellInRow:= ToolsP.Width div (toolSide+toolSpace);
@@ -151,20 +152,20 @@ procedure TMainF.VerticalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
   var ScrollPos: Integer);
 begin
   if (VerticalSB.Position+VerticalSB.PageSize) > VerticalSB.Max Then exit;;
-  VP.SetSb(Point(0,VerticalSB.Position));
+  MainPB.Invalidate;
 end;
 
 procedure TMainF.MainPBMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
   isDrawing := True;
-  ToolContainer.tool[selectedToolId].MDown(Point(X, Y), button);
+  ToolContainer.tool[selectedToolId].MDown(Point(X, Y), shift);
   MainPB.Invalidate;
 end;
 
 procedure TMainF.MainPBMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integer);
 begin
-  ToolContainer.tool[selectedToolId].MMove(Point(X, Y), isDrawing);
+  ToolContainer.tool[selectedToolId].MMove(Point(X, Y), isDrawing, shift);
   MainPB.Invalidate;
 end;
 
@@ -172,7 +173,7 @@ procedure TMainF.MainPBMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
   isDrawing := False;
-  ToolContainer.tool[selectedToolId].MUp(Point(X, Y));
+  ToolContainer.tool[selectedToolId].MUp(Point(X, Y), shift);
   MainPB.Invalidate;
   Inspector.Load(TPersistent(ToolContainer.tool[selectedToolId].GetParamObj), ParamToolP);
 end;
@@ -182,8 +183,8 @@ begin
   MainPB.Canvas.Brush.Color:= clWhite;
   MainPB.Canvas.Brush.Style:= bsSolid;
   MainPB.Canvas.FillRect(0,0,MainPB.Width, MainPB.Height);
-  Scene.Draw(MainPB.Canvas);
   VP.ReCalculate(MainPB, HorizontalSB, VerticalSB);
+  Scene.Draw(MainPB.Canvas);
 end;
 
 procedure TMainF.PaletteGMouseDown(Sender: TObject; Button: TMouseButton;
@@ -193,8 +194,8 @@ var
   t: integer;
 begin
   PaletteG.MouseToCell(x, y, tCol, tRow);
-  paletteCell.x:=tCol;
-  paletteCell.y:=tRow;
+  paletteCell.x:=tCol; //paletteCell - объявленно глобально
+  paletteCell.y:=tRow; //используется для передачи номера ячейки в double click
   t:= PaletteG.ColCount * paletteCell.y + paletteCell.x;
   if Button = mbLeft Then begin
     PenS.Brush.Color:= paletteColors[t];
@@ -224,7 +225,7 @@ end;
 procedure TMainF.AboutMIClick(Sender: TObject);
 begin
   ShowMessage('Векторный редактор' + #13 +
-    'Денис Давидюк Б8103А' + #13 + '06 декабря 2012');
+    'Денис Давидюк Б8103А' + #13 + '28 декабря 2012');
 end;
 
 procedure TMainF.BrushSMouseDown(Sender: TObject; Button: TMouseButton;
@@ -245,14 +246,15 @@ end;
 procedure TMainF.HorizontalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
   var ScrollPos: Integer);
 begin
-  if (HorizontalSB.Position+HorizontalSB.PageSize) > HorizontalSB.Max Then exit;;
-  VP.SetSb(Point(HorizontalSB.Position, 0));
+  if (HorizontalSB.Position+HorizontalSB.PageSize) > HorizontalSB.Max Then exit;
+  MainPB.Invalidate;
 end;
 
 procedure TMainF.MainPBMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
   VP.ScaleMouseWhell(MousePos, WheelDelta>0);
+  MainPB.Invalidate;
 end;
 
 procedure TMainF.PaletteGDblClick(Sender: TObject);
@@ -272,8 +274,8 @@ end;
 procedure TMainF.PaletteGDrawCell(Sender: TObject; aCol, aRow: Integer;
   aRect: TRect; aState: TGridDrawState);
 begin
-  PaletteG.Canvas.Brush.Color:= paletteColors[(aRow)*PaletteG.ColCount+aCol];
-  PaletteG.Canvas.FillRect(aRect.Left, aRect.Top, aRect.Right, aRect.Bottom);
+  PaletteG.Canvas.Brush.Color:= paletteColors[aRow*PaletteG.ColCount+aCol];
+  PaletteG.Canvas.FillRect(aRect);
 end;
 
 end.

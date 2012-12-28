@@ -9,7 +9,7 @@ uses
 
 type
 
-  TScale = real;
+  TScale = type real;
 
   { TTScaleP }
 
@@ -30,9 +30,9 @@ type
     IsDown: boolean;
     p: TPoint;
   public
-    procedure MMove(point: TPoint; isDrawing: boolean); override;
-    procedure MDown(point: TPoint; button: TMouseButton); override;
-    procedure MUp(point: TPoint); override;
+    procedure MMove(point: TPoint; isDrawing: boolean; shift: TShiftState); override;
+    procedure MDown(point: TPoint; shift: TShiftState); override;
+    procedure MUp(point: TPoint; shift: TShiftState); override;
     function GetParamObj:TPersistent; override;
     function CreateParamObj:TPersistent; override;
   end;
@@ -43,9 +43,9 @@ type
   private
     LastPoint: TPoint;
   public
-    procedure MMove(point: TPoint; isDrawing: boolean); override;
-    procedure MDown(point: TPoint; button: TMouseButton); override;
-    procedure MUp(point: TPoint); override;
+    procedure MMove(point: TPoint; isDrawing: boolean; shift: TShiftState); override;
+    procedure MDown(point: TPoint; shift: TShiftState); override;
+    procedure MUp(point: TPoint; shift: TShiftState); override;
     function GetParamObj:TPersistent; override;
     function CreateParamObj:TPersistent; override;
   end;
@@ -54,7 +54,7 @@ implementation
 
 { TTShift }
 
-procedure TTShift.MMove(point: TPoint; isDrawing: boolean);
+procedure TTShift.MMove(point: TPoint; isDrawing: boolean; shift: TShiftState);
 var t: TPoint;
 begin
   if not isDrawing then exit;
@@ -64,12 +64,12 @@ begin
   LastPoint := point;
 end;
 
-procedure TTShift.MDown(point: TPoint; button: TMouseButton);
+procedure TTShift.MDown(point: TPoint; shift: TShiftState);
 begin
   LastPoint := point;
 end;
 
-procedure TTShift.MUp(point: TPoint);
+procedure TTShift.MUp(point: TPoint; shift: TShiftState);
 begin
 
 end;
@@ -88,24 +88,24 @@ end;
 
 procedure TTScaleP.SetScale(scale: TScale);
 begin
-  VP.SetScale(scale);
+  VP.Scale:= scale;
 end;
 
 function TTScaleP.GetScale: TScale;
 begin
-  result:= VP.GetScale;
+  result:= VP.Scale;
 end;
 
 { TTScale }
 
-procedure TTScale.MMove(point: TPoint; isDrawing: boolean);
+procedure TTScale.MMove(point: TPoint; isDrawing: boolean; shift: TShiftState);
 begin
   if not isDrawing then
     exit;
   Scene.getLast.Point(point, false);
 end;
 
-procedure TTScale.MDown(point: TPoint; button: TMouseButton);
+procedure TTScale.MDown(point: TPoint; shift: TShiftState);
 var
   Rec: TS2FRectangle;
 begin
@@ -121,11 +121,11 @@ begin
   IsDown:= true;
 end;
 
-procedure TTScale.MUp(point: TPoint);
+procedure TTScale.MUp(point: TPoint; shift: TShiftState);
 begin
   if not IsDown then exit;
   Scene.delLastShape;
-  Shape.Destroy;
+  //Shape.Destroy;
   VP.ScaleTo(p, point);
 end;
 
