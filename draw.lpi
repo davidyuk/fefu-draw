@@ -38,7 +38,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="10">
       <Unit0>
         <Filename Value="draw.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -63,25 +63,35 @@
         <UnitName Value="DrawShapes"/>
       </Unit3>
       <Unit4>
-        <Filename Value="draweditors.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="DrawEditors"/>
-      </Unit4>
-      <Unit5>
         <Filename Value="drawtoolsshapes.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DrawToolsShapes"/>
-      </Unit5>
-      <Unit6>
+      </Unit4>
+      <Unit5>
         <Filename Value="drawzoom.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DrawZoom"/>
-      </Unit6>
-      <Unit7>
+      </Unit5>
+      <Unit6>
         <Filename Value="drawtoolszoom.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DrawToolsZoom"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="drawtoolsmouse.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DrawToolsMouse"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="drawobjectinspector.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DrawObjectInspector"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="drawobjecteditors.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DrawObjectEditors"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

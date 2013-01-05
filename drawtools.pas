@@ -5,7 +5,7 @@ unit DrawTools;
 interface
 
 uses
-  Classes, Graphics, DrawShapes, Controls, DrawEditors;
+  Classes, Graphics, DrawShapes, Controls, DrawObjectInspector;
 
 type
 
@@ -90,7 +90,7 @@ end;
 
 procedure TTShape.MUp(point: TPoint; shift: TShiftState);
 begin
-  CreateParamObj;
+  Inspector.LoadNew(CreateParamObj);
 end;
 
 function TTShape.GetParamObj: TPersistent;

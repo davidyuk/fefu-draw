@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, FileUtil, Graphics, Forms, Controls,
   Dialogs, ExtCtrls, Menus, ComCtrls, StdCtrls, Buttons, Grids, Spin, TypInfo,
-  DrawTools, DrawEditors, DrawZoom, types;
+  DrawTools, DrawObjectInspector, DrawZoom, types;
 
 type
 
@@ -68,6 +68,7 @@ type
     paletteCell: TPoint;
   public
     PBInvalidate: procedure of object;
+    procedure LoadSelectedShapes;
   end;
 
 var
@@ -92,6 +93,7 @@ begin
   PBInvalidate := @MainPB.Invalidate;
   Scene := TScene.Create();
   VP := TViewport.Create();
+  Inspector := TInspector.Create(ParamToolP);
   //Генерация кнопок
   t1:= 0; t2:= 0;
   cellInRow:= ToolsP.Width div (toolSide+toolSpace);
@@ -145,7 +147,7 @@ var
 begin
   b := TSpeedButton(Sender);
   selectedToolId := b.Tag;
-  Inspector.Load(TPersistent(ToolContainer.tool[selectedToolId].CreateParamObj), ParamToolP);
+  Inspector.LoadNew(TPersistent(ToolContainer.tool[selectedToolId].CreateParamObj));
 end;
 
 procedure TMainF.VerticalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
@@ -153,6 +155,20 @@ procedure TMainF.VerticalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
 begin
   if (VerticalSB.Position+VerticalSB.PageSize) > VerticalSB.Max Then exit;;
   MainPB.Invalidate;
+end;
+
+procedure TMainF.LoadSelectedShapes;
+var
+  a: array of TPersistent;
+  i: integer;
+begin
+  setLength(a, 0);
+  for i:= 0 to High(Scene.Shapes) do
+    if Scene.Shapes[i].Selected Then begin
+      setLength(a, length(a)+1);
+      a[high(a)]:= TPersistent(Scene.Shapes[i]);
+    end;
+  Inspector.Load(a);
 end;
 
 procedure TMainF.MainPBMouseDown(Sender: TObject; Button: TMouseButton;
@@ -175,7 +191,6 @@ begin
   isDrawing := False;
   ToolContainer.tool[selectedToolId].MUp(Point(X, Y), shift);
   MainPB.Invalidate;
-  Inspector.Load(TPersistent(ToolContainer.tool[selectedToolId].GetParamObj), ParamToolP);
 end;
 
 procedure TMainF.MainPBPaint(Sender: TObject);
@@ -255,6 +270,7 @@ procedure TMainF.MainPBMouseWheel(Sender: TObject; Shift: TShiftState;
 begin
   VP.ScaleMouseWhell(MousePos, WheelDelta>0);
   MainPB.Invalidate;
+  Inspector.Refresh;
 end;
 
 procedure TMainF.PaletteGDblClick(Sender: TObject);

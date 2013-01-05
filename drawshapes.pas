@@ -16,10 +16,13 @@ type
     pC: TColor;
     pW: Integer;
     pS: TFPPenStyle;
+    sel: boolean;
   public
     procedure Draw(canvas: TCanvas); virtual;
     procedure Point(point: TPoint; new: Boolean = true); virtual; abstract;
     function BoundingRect:TRectReal; virtual; abstract;
+    property Selected: boolean read sel write sel;
+    procedure Select(aRect: TRect); virtual; abstract;
   published
     property penC: TColor read pC write pC;
     property penW: Integer read pW write pW;
@@ -41,6 +44,8 @@ type
   public
     procedure Point(point: TPoint; new: Boolean = true); override;
     function BoundingRect:TRectReal; override;
+    procedure Select(aRect: TRect); override;
+    procedure Draw(canvas: TCanvas); override;
   end;
 
   { TS2Line }
@@ -98,6 +103,7 @@ type
   public
     procedure Point(point: TPoint; new: Boolean = true); override;
     procedure Draw(canvas: TCanvas); override;
+    procedure Select(aRect: TRect); override;
     function BoundingRect:TRectReal; override;
   end;
 
@@ -133,11 +139,42 @@ end;
 
 procedure TSMPoint.Draw(canvas: TCanvas);
 var i: integer;
+  t: TRectReal;
+  p1, p2: TPointReal;
+  p3, p4: TPoint;
 begin
   inherited Draw(canvas);
   canvas.MoveTo(VP.WtoS(points[0])); //может стоит проверить есть-ли в массиве элементы
   for i:= 0 to high(points) do
     canvas.LineTo(VP.WtoS(points[i]));
+  if sel then begin
+    canvas.pen.width:= 1;
+    canvas.Pen.Color:= clGreen;
+    canvas.Brush.Style:= bsClear;
+    t:= BoundingRect;
+    p1.x:= t.Left;
+    p1.y:= t.Top;
+    p2.x:= t.Right;
+    p2.y:= t.Bottom;
+    p3:= VP.WtoS(p1);
+    p4:= VP.WtoS(p2);
+    canvas.Rectangle(p3.x-5, p3.y-5, p4.x+5, p4.y+5);
+  end;
+end;
+
+procedure TSMPoint.Select(aRect: TRect);
+var
+  i: integer;
+  p: TPoint;
+begin
+  sel:= true;
+  for i:= 0 to high(points) do begin
+    p:= VP.WtoS(points[i]);
+    if not((p.x >= aRect.Left) and (p.x <= aRect.Right) and (p.y >= aRect.Top) and (p.y <= aRect.Bottom)) then begin
+      sel:= false;
+      exit;
+    end;
+  end;
 end;
 
 function TSMPoint.BoundingRect: TRectReal;
@@ -193,7 +230,7 @@ end;
 procedure TShapeBase.Draw(canvas: TCanvas);
 begin
   canvas.pen.Color := pC;
-  canvas.pen.Width := pW;
+  canvas.pen.Width := Round(pW*VP.Scale);
   canvas.pen.Style := pS;
 end;
 
@@ -249,6 +286,36 @@ begin
   Result.Right := Max(p1r.x, p2r.x);
   Result.Top := Min(p1r.y, p2r.y);
   Result.Bottom := Max(p1r.y, p2r.y);
+end;
+
+procedure TS2Point.Select(aRect: TRect);
+begin
+  if (p1.x >= aRect.Left) and (p1.x <= aRect.Right) and
+     (p2.x >= aRect.Left) and (p2.x <= aRect.Right) and
+     (p1.y >= aRect.Top) and (p1.y <= aRect.Bottom) and
+     (p2.y >= aRect.Top) and (p2.y <= aRect.Bottom) then sel:= true
+  else sel:= false;
+end;
+
+procedure TS2Point.Draw(canvas: TCanvas);
+const
+  m = 5;
+var
+  width: integer;
+  color: TColor;
+begin
+  width:= canvas.Pen.Width;
+  color:= canvas.Pen.Color;
+  if sel then begin
+    canvas.pen.width:= 1;
+    canvas.Pen.Color:= clGreen;
+    canvas.Pen.Style:= psDash;
+    canvas.Brush.Style:= bsClear;
+    canvas.Rectangle(Min(p1.x, p2.x)-m, Min(p1.y, p2.y)-m, Max(p1.x, p2.x)+m, Max(p1.y, p2.y)+m);
+  end;
+  canvas.Pen.Width:= width;
+  canvas.Pen.Color:= color;
+  inherited Draw(canvas);
 end;
 
 end.

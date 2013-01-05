@@ -21,7 +21,7 @@ type
 
   TViewport = class
   const
-    c_BorderMargin = 10;
+    c_BorderMargin = 20;
   private
     Border: TRectReal;                   //общий bounding rect
     WScale: real;                        //масштаб
@@ -45,7 +45,7 @@ var
 implementation
 
 uses
-  DrawTools;
+  DrawTools, DrawObjectInspector;
 
 { TViewport }
 
@@ -87,14 +87,14 @@ begin
       if Border.Top > t.Top Then Border.Top:= t.Top;
       if Border.Bottom < t.Bottom Then Border.Bottom:= t.Bottom;
     end;
-    PaintB.Canvas.Pen.Color:= $bb99bb;
+    PaintB.Canvas.Pen.Color:= $ff8888;
     PaintB.Canvas.Pen.Width:= 1;
     PaintB.Canvas.Pen.Style:= psSolid;
     PaintB.Canvas.Brush.Style := bsClear;
-    Border.Left -= c_BorderMargin/WScale;
-    Border.Top -= c_BorderMargin/WScale;
-    Border.Right += c_BorderMargin/WScale;
-    Border.Bottom += c_BorderMargin/WScale;
+    Border.Left -= c_BorderMargin*WScale;
+    Border.Top -= c_BorderMargin*WScale;
+    Border.Right += c_BorderMargin*WScale;
+    Border.Bottom += c_BorderMargin*WScale;
     p1.X:= Border.Left;
     p1.Y:= Border.Top;
     p2.X:= Border.Right;
@@ -148,6 +148,7 @@ begin
   if (abs(p1r.X - p2r.X)/VisPart.X) < (abs(p1r.Y - p2r.Y)/VisPart.Y) then
     WScale:= (VisPart.Y*WScale)/abs(p1r.Y-p2r.Y)
   else WScale:= (VisPart.X*WScale)/abs(p1r.X-p2r.X);
+  Inspector.Refresh;
 end;
 
 procedure TViewport.ScaleMouseWhell(point: TPoint; way: boolean);
@@ -156,10 +157,10 @@ var
   t1, t2: TPointReal;
 begin
   t1:= VP.StoW(point);
-  step:= 0.1;
-  if not way then step *= -1;
-  if (VP.Scale < 0.15) and (step<0) Then exit;
-  WScale += step;
+  step:= 2;
+  if not way then step := 1/step;
+  if (VP.Scale < 0.03) and (not way) Then exit;
+  WScale := WScale * step;
   t2 := VP.StoW(point);
   WorldPos.x:= WorldPos.x - (t2.x-t1.x);
   WorldPos.y:= WorldPos.y - (t2.y-t1.y);

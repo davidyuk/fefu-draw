@@ -125,8 +125,9 @@ procedure TTScale.MUp(point: TPoint; shift: TShiftState);
 begin
   if not IsDown then exit;
   Scene.delLastShape;
-  //Shape.Destroy;
+  Shape.Destroy;
   VP.ScaleTo(p, point);
+  IsDown:= false;
 end;
 
 function TTScale.GetParamObj: TPersistent;

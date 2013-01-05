@@ -1,22 +1,22 @@
 object MainF: TMainF
-  Left = 291
-  Height = 555
-  Top = 87
-  Width = 755
+  Left = 305
+  Height = 519
+  Top = 190
+  Width = 549
   Caption = 'Векторный редактор'
-  ClientHeight = 535
-  ClientWidth = 755
+  ClientHeight = 499
+  ClientWidth = 549
   Menu = MainMenu
   OnCreate = FormCreate
   LCLVersion = '1.0.2.0'
   object LeftP: TPanel
     Left = 0
-    Height = 410
+    Height = 374
     Top = 0
     Width = 208
     Align = alLeft
     BevelOuter = bvNone
-    ClientHeight = 410
+    ClientHeight = 374
     ClientWidth = 208
     ParentColor = False
     TabOrder = 0
@@ -48,7 +48,7 @@ object MainF: TMainF
     end
     object ParamToolP: TPanel
       Left = 3
-      Height = 260
+      Height = 224
       Top = 147
       Width = 202
       Align = alClient
@@ -64,12 +64,12 @@ object MainF: TMainF
   object PaletteP: TPanel
     Left = 0
     Height = 125
-    Top = 410
-    Width = 755
+    Top = 374
+    Width = 549
     Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 125
-    ClientWidth = 755
+    ClientWidth = 549
     ParentColor = False
     TabOrder = 1
     object PaletteMainP: TPanel
@@ -126,8 +126,8 @@ object MainF: TMainF
     end
   end
   object VerticalSB: TScrollBar
-    Left = 738
-    Height = 393
+    Left = 532
+    Height = 357
     Top = 0
     Width = 17
     Align = alRight
@@ -141,19 +141,19 @@ object MainF: TMainF
   end
   object MainP: TPanel
     Left = 208
-    Height = 410
+    Height = 374
     Top = 0
-    Width = 530
+    Width = 324
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 410
-    ClientWidth = 530
+    ClientHeight = 374
+    ClientWidth = 324
     TabOrder = 3
     object HorizontalSB: TScrollBar
       Left = 0
       Height = 17
-      Top = 393
-      Width = 530
+      Top = 357
+      Width = 324
       Align = alBottom
       Enabled = False
       Max = 999
@@ -164,9 +164,9 @@ object MainF: TMainF
     end
     object MainPB: TPaintBox
       Left = 0
-      Height = 393
+      Height = 357
       Top = 0
-      Width = 530
+      Width = 324
       Align = alClient
       Color = clWhite
       ParentColor = False
