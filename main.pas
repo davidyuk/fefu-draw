@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, FileUtil, Graphics, Forms, Controls,
   Dialogs, ExtCtrls, Menus, ComCtrls, StdCtrls, Buttons, Grids, Spin, TypInfo,
-  DrawTools, DrawObjectInspector, DrawZoom, types;
+  DrawTools, DrawObjectInspector, DrawZoom, types, XMLWrite, XMLRead, DOM;
 
 type
 
@@ -15,6 +15,20 @@ type
 
   TMainF = class(TForm)
     ColorDialog: TColorDialog;
+    ShapeBottomMI: TMenuItem;
+    ShapeMoveUpMI: TMenuItem;
+    ShapeMoveDownMI: TMenuItem;
+    ShapeZindexMI: TMenuItem;
+    ShapeTopMI: TMenuItem;
+    ShapeDeleteMI: TMenuItem;
+    OpenDialog: TOpenDialog;
+    ShapeEditPM: TPopupMenu;
+    SaveDialog: TSaveDialog;
+    SeparatorMI: TMenuItem;
+    OpenMI: TMenuItem;
+    SaveMI: TMenuItem;
+    SaveAsMI: TMenuItem;
+    NewMI: TMenuItem;
     ViewMI: TMenuItem;
     FillMI: TMenuItem;
     PaletteG: TDrawGrid;
@@ -38,11 +52,14 @@ type
     procedure AboutMIClick(Sender: TObject);
     procedure BrushSMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
+    procedure NewMIClick(Sender: TObject);
     procedure FillMIClick(Sender: TObject);
     procedure HorizontalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
       var ScrollPos: Integer);
     procedure MainPBMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure OpenMIClick(Sender: TObject);
     procedure PaletteGDblClick(Sender: TObject);
     procedure PaletteGDrawCell(Sender: TObject; aCol, aRow: Integer;
       aRect: TRect; aState: TGridDrawState);
@@ -58,11 +75,22 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure PenSMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
+    procedure SaveAsMIClick(Sender: TObject);
+    procedure SaveMIClick(Sender: TObject);
+    procedure ShapeBottomMIClick(Sender: TObject);
+    procedure ShapeDeleteMIClick(Sender: TObject);
+    procedure ShapeMoveDownMIClick(Sender: TObject);
+    procedure ShapeMoveUpMIClick(Sender: TObject);
+    procedure ShapeTopMIClick(Sender: TObject);
     procedure ToolClick(Sender: TObject);
     procedure VerticalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
       var ScrollPos: Integer);
+    procedure SetTitle;
+  const
+    ProgramName = 'Векторный редактор';
   private
-    isDrawing: boolean;
+    isDrawing, isEdited: boolean;
+    fileName, fileAdr: string;
     selectedToolId: integer;
     paletteColors: array of TColor;
     paletteCell: TPoint;
@@ -92,11 +120,15 @@ var
 begin
   PBInvalidate := @MainPB.Invalidate;
   Scene := TScene.Create();
+  fileName := 'Безымянный';
+  isEdited := false;
+  SetTitle;
   VP := TViewport.Create();
   Inspector := TInspector.Create(ParamToolP);
   //Генерация кнопок
   t1:= 0; t2:= 0;
   cellInRow:= ToolsP.Width div (toolSide+toolSpace);
+  selectedToolId := 0;
   for i := 0 to high(ToolContainer.tool) do
   begin
     m:= TBitmap.Create;
@@ -146,6 +178,7 @@ var
   b: TSpeedButton;
 begin
   b := TSpeedButton(Sender);
+  ToolContainer.tool[selectedToolId].Leave;
   selectedToolId := b.Tag;
   Inspector.LoadNew(TPersistent(ToolContainer.tool[selectedToolId].CreateParamObj));
 end;
@@ -155,6 +188,20 @@ procedure TMainF.VerticalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
 begin
   if (VerticalSB.Position+VerticalSB.PageSize) > VerticalSB.Max Then exit;;
   MainPB.Invalidate;
+end;
+
+procedure TMainF.SetTitle;
+var
+  c: string;
+begin
+  c:= '';
+  if isEdited Then c+= '*';
+  if fileAdr <> '' Then begin
+    fileName:= fileAdr;
+    while pos('\', fileName) > 0 do
+      fileName:= copy(fileName, pos('\', fileName)+1, length(fileName));
+  end;
+  MainF.Caption := fileName + c + ' - ' + ProgramName;
 end;
 
 procedure TMainF.LoadSelectedShapes;
@@ -175,6 +222,8 @@ procedure TMainF.MainPBMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
   isDrawing := True;
+  isEdited := true;
+  SetTitle;
   ToolContainer.tool[selectedToolId].MDown(Point(X, Y), shift);
   MainPB.Invalidate;
 end;
@@ -232,6 +281,59 @@ begin
   end;
 end;
 
+procedure TMainF.SaveAsMIClick(Sender: TObject);
+begin
+  if fileAdr <> '' then SaveDialog.FileName := fileName;
+  if not SaveDialog.Execute Then exit;
+  WriteXMLFile(Scene.GetXML, SaveDialog.FileName);
+  fileAdr := SaveDialog.FileName;
+  isEdited := false;
+  SetTitle;
+end;
+
+procedure TMainF.SaveMIClick(Sender: TObject);
+begin
+  if not isEdited Then exit;
+  if fileAdr = '' then begin
+    SaveAsMIClick(nil);
+    exit;
+  end;
+  WriteXMLFile(Scene.GetXML, SaveDialog.FileName);
+  fileAdr := SaveDialog.FileName;
+  isEdited := false;
+  SetTitle;
+end;
+
+procedure TMainF.ShapeBottomMIClick(Sender: TObject);
+begin
+  Scene.ShapeSelZIndex(false, false);
+  MainPB.Invalidate;
+end;
+
+procedure TMainF.ShapeDeleteMIClick(Sender: TObject);
+begin
+  Scene.ShapeSelDelete;
+  MainPB.Invalidate;
+end;
+
+procedure TMainF.ShapeMoveDownMIClick(Sender: TObject);
+begin
+  Scene.ShapeSelZIndex(true, false);
+  MainPB.Invalidate;
+end;
+
+procedure TMainF.ShapeMoveUpMIClick(Sender: TObject);
+begin
+  Scene.ShapeSelZIndex(true, true);
+  MainPB.Invalidate;
+end;
+
+procedure TMainF.ShapeTopMIClick(Sender: TObject);
+begin
+  Scene.ShapeSelZIndex(false, true);
+  MainPB.Invalidate;
+end;
+
 procedure TMainF.ExitMIClick(Sender: TObject);
 begin
   MainF.Close;
@@ -239,8 +341,8 @@ end;
 
 procedure TMainF.AboutMIClick(Sender: TObject);
 begin
-  ShowMessage('Векторный редактор' + #13 +
-    'Денис Давидюк Б8103А' + #13 + '28 декабря 2012');
+  ShowMessage('Векторный редактор' + #13#10 +
+    'Денис Давидюк Б8103А' + #13#10 + '08 января 2013');
 end;
 
 procedure TMainF.BrushSMouseDown(Sender: TObject; Button: TMouseButton;
@@ -251,6 +353,33 @@ begin
     BrushS.Brush.Color := ColorDialog.Color;
     Inspector.SetBrushColor(BrushS.Brush.Color);
   end;
+end;
+
+procedure TMainF.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+var ans: integer;
+begin
+  if isEdited = true then begin
+    ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtWarning, [mbYes, mbNo, mbCancel], 0);
+    if ans = mrCancel Then CanClose := false;
+    if ans = mrYes Then SaveMIClick(nil);
+  end;
+  CanClose := true;
+end;
+
+procedure TMainF.NewMIClick(Sender: TObject);
+var ans: integer;
+begin
+  if isEdited then begin
+    ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtWarning, [mbYes, mbNo, mbCancel], 0);
+    if ans = mrCancel Then exit;
+    if ans = mrYes Then SaveMIClick(nil);
+  end;
+  fileAdr:='';
+  fileName:= 'Безымянный';
+  isEdited := false;
+  SetTitle;
+  Scene.NewXML;
+  MainPB.Invalidate;
 end;
 
 procedure TMainF.FillMIClick(Sender: TObject);
@@ -271,6 +400,26 @@ begin
   VP.ScaleMouseWhell(MousePos, WheelDelta>0);
   MainPB.Invalidate;
   Inspector.Refresh;
+end;
+
+procedure TMainF.OpenMIClick(Sender: TObject);
+var
+  image: TXMLDocument;
+  ans: integer;
+begin
+  if OpenDialog.Execute Then begin
+    if isEdited then begin
+      ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtInformation, [mbYes, mbNo, mbCancel], 0);
+      if ans = mrCancel Then exit;
+      if ans = mrYes Then SaveMIClick(nil);
+    end;
+    ReadXMLFile(image, OpenDialog.FileName);
+    if not Scene.SetXML(image) then exit;
+    fileAdr  := OpenDialog.FileName;
+    isEdited:= false;
+    SetTitle;
+    MainPB.Invalidate;
+  end;
 end;
 
 procedure TMainF.PaletteGDblClick(Sender: TObject);

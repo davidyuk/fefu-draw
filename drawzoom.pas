@@ -5,17 +5,9 @@ unit DrawZoom;
 interface
 
 uses
-  Classes, SysUtils, Controls, Graphics, Forms, StdCtrls, ExtCtrls, Math, Dialogs;
+  Classes, SysUtils, Controls, Graphics, Forms, StdCtrls, ExtCtrls, Math, Dialogs, DrawTypes;
 
 type
-
-  TRectReal = record
-    Left, Right, Top, Bottom: real;
-  end;
-
-  TPointReal = record
-    X, Y: real;
-  end;
 
   { TViewport }
 
@@ -32,6 +24,8 @@ type
     property Scale: real read WScale write WScale;
     function WtoS(world: TPointReal):TPoint;                          //Мировые -> Экранные
     function StoW(screen: TPoint):TPointReal;                         //Экранные -> Мировые
+    function WtoS(world: TRectReal):TRect; overload;
+    function StoW(world: TRect):TRectReal; overload;
     procedure SetWorldPosShift(shift:TPoint);                         //Переместить VP относительно холста
     procedure ReCalculate(PaintB: TPaintbox; HrSb, VrSb: TScrollBar); //Перерасчёт размеров SB
     procedure ScaleTo(p1, p2: TPoint);                                //Вписать в VP указанную область
@@ -41,6 +35,7 @@ type
 
 var
   VP: TViewport;
+
 
 implementation
 
@@ -59,6 +54,16 @@ function TViewport.StoW(screen: TPoint): TPointReal;
 begin
   Result.x:= (screen.x - PBCenter.x)/WScale + WorldPos.x;
   Result.y:= (screen.y - PBCenter.y)/WScale + WorldPos.y;
+end;
+
+function TViewport.WtoS(world: TRectReal): TRect;
+begin
+  result:= Rect(WtoS(PointReal(world.Left, world.Top)), WtoS(PointReal(world.Right, world.Bottom)));
+end;
+
+function TViewport.StoW(world: TRect): TRectReal;
+begin
+  Result:= RectReal(StoW(Point(world.Left, world.Top)), StoW(Point(world.Right, world.Bottom)));
 end;
 
 procedure TViewport.SetWorldPosShift(shift: TPoint);
@@ -113,13 +118,17 @@ begin
     //Расстояние(От меньшего края до позиции точки)/(РазмерW+ОтображаемаяЧасть) * ДиаппазонЗначений
     if HrSb.PageSize < HrSb.Max Then begin
       HrSb.Visible:= true;
-      If HrSb.Position <> HrSbP Then WorldPos.X:= Border.Left+(Border.Right-Border.Left)/(HrSbLen-HrSb.PageSize)*HrSb.position
-      else HrSb.Position := trunc((WorldPos.X - Border.Left)/all.x*HrSbLen);
+      If HrSb.Position <> HrSbP Then
+        WorldPos.X:= Border.Left+(Border.Right-Border.Left)/(HrSbLen-HrSb.PageSize)*HrSb.position
+      else
+        HrSb.Position := trunc((WorldPos.X - Border.Left)/all.x*HrSbLen);
     end else HrSb.Visible:= false;
     if VrSb.PageSize < VrSb.Max Then begin
       VrSb.Visible:= true;
-      If VrSb.Position <> VrSbP Then WorldPos.Y:= Border.Top+(Border.Bottom-Border.Top)/(VrSbLen-VrSb.PageSize)*VrSb.position
-      else VrSb.Position := trunc((WorldPos.Y - Border.Top)/all.y*VrSbLen);
+      If VrSb.Position <> VrSbP Then
+        WorldPos.Y:= Border.Top+(Border.Bottom-Border.Top)/(VrSbLen-VrSb.PageSize)*VrSb.position
+      else
+        VrSb.Position := trunc((WorldPos.Y - Border.Top)/all.y*VrSbLen);
     end else VrSb.Visible:= false;
     HrSbP:= HrSb.Position;
     VrSbP:= VrSb.Position;
@@ -143,8 +152,7 @@ begin
     p1r:= StoW(p1);
     p2r:= StoW(p2);
   end;
-  WorldPos.X := (p1r.X + p2r.X)/2;
-  WorldPos.Y := (p1r.Y + p2r.Y)/2;
+  WorldPos := (p1r +p2r ) /2;
   if (abs(p1r.X - p2r.X)/VisPart.X) < (abs(p1r.Y - p2r.Y)/VisPart.Y) then
     WScale:= (VisPart.Y*WScale)/abs(p1r.Y-p2r.Y)
   else WScale:= (VisPart.X*WScale)/abs(p1r.X-p2r.X);
@@ -162,8 +170,7 @@ begin
   if (VP.Scale < 0.03) and (not way) Then exit;
   WScale := WScale * step;
   t2 := VP.StoW(point);
-  WorldPos.x:= WorldPos.x - (t2.x-t1.x);
-  WorldPos.y:= WorldPos.y - (t2.y-t1.y);
+  WorldPos:= WorldPos - (t2-t1);
 end;
 
 constructor TViewport.Create();

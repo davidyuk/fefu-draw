@@ -302,7 +302,7 @@ begin
   cmbbox.Left:= trunc(panel.width * ratio) + margin;
   cmbbox.width:= trunc(panel.Width * (1-ratio)) - margin*2;
   for i in TFPPenStyle do
-    if not (i in [psinsideFrame,psPattern]) then
+    if not (i in [psinsideFrame,psPattern,psClear]) then
       cmbbox.AddItem('',TObject(i));
   cmbbox.OnDrawItem := @cmbboxDrawItem;
   cmbbox.OnChange := @Change;
@@ -328,7 +328,7 @@ begin
   j:= GetInt64Prop(obj[0], prop);
   for i:= 1 to high(obj) do
     if GetInt64Prop(obj[i], prop) <> j then begin
-      j:= integer(psClear);
+      j:= integer(psSolid);
       break;
     end;
   for i:= 0 to cmbbox.Items.Count-1 do begin

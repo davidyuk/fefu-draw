@@ -7,8 +7,9 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, main, DrawTools, DrawShapes, DrawObjectEditors, runtimetypeinfocontrols,
-  DrawToolsShapes, DrawZoom, DrawToolsZoom, DrawToolsMouse, DrawObjectInspector;
+  Forms, main, DrawTools, DrawShapes, DrawObjectEditors,
+  runtimetypeinfocontrols, DrawToolsShapes, DrawZoom, DrawToolsZoom,
+  DrawToolsMouse, DrawObjectInspector, DrawTypes;
 
 {$R *.res}
 

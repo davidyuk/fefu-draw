@@ -1,22 +1,25 @@
 object MainF: TMainF
-  Left = 305
-  Height = 519
-  Top = 190
-  Width = 549
+  Left = -849
+  Height = 400
+  Top = 108
+  Width = 600
   Caption = 'Векторный редактор'
-  ClientHeight = 499
-  ClientWidth = 549
+  ClientHeight = 380
+  ClientWidth = 600
+  Constraints.MinHeight = 380
+  Constraints.MinWidth = 420
   Menu = MainMenu
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  LCLVersion = '1.0.2.0'
+  LCLVersion = '1.0.4.0'
   object LeftP: TPanel
     Left = 0
-    Height = 374
+    Height = 255
     Top = 0
     Width = 208
     Align = alLeft
     BevelOuter = bvNone
-    ClientHeight = 374
+    ClientHeight = 255
     ClientWidth = 208
     ParentColor = False
     TabOrder = 0
@@ -48,7 +51,7 @@ object MainF: TMainF
     end
     object ParamToolP: TPanel
       Left = 3
-      Height = 224
+      Height = 105
       Top = 147
       Width = 202
       Align = alClient
@@ -64,12 +67,12 @@ object MainF: TMainF
   object PaletteP: TPanel
     Left = 0
     Height = 125
-    Top = 374
-    Width = 549
+    Top = 255
+    Width = 600
     Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 125
-    ClientWidth = 549
+    ClientWidth = 600
     ParentColor = False
     TabOrder = 1
     object PaletteMainP: TPanel
@@ -126,8 +129,8 @@ object MainF: TMainF
     end
   end
   object VerticalSB: TScrollBar
-    Left = 532
-    Height = 357
+    Left = 583
+    Height = 238
     Top = 0
     Width = 17
     Align = alRight
@@ -141,19 +144,19 @@ object MainF: TMainF
   end
   object MainP: TPanel
     Left = 208
-    Height = 374
+    Height = 255
     Top = 0
-    Width = 324
+    Width = 375
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 374
-    ClientWidth = 324
+    ClientHeight = 255
+    ClientWidth = 375
     TabOrder = 3
     object HorizontalSB: TScrollBar
       Left = 0
       Height = 17
-      Top = 357
-      Width = 324
+      Top = 238
+      Width = 375
       Align = alBottom
       Enabled = False
       Max = 999
@@ -164,12 +167,13 @@ object MainF: TMainF
     end
     object MainPB: TPaintBox
       Left = 0
-      Height = 357
+      Height = 238
       Top = 0
-      Width = 324
+      Width = 375
       Align = alClient
       Color = clWhite
       ParentColor = False
+      PopupMenu = ShapeEditPM
       OnMouseDown = MainPBMouseDown
       OnMouseMove = MainPBMouseMove
       OnMouseUp = MainPBMouseUp
@@ -178,10 +182,29 @@ object MainF: TMainF
     end
   end
   object MainMenu: TMainMenu
-    left = 416
-    top = 72
+    left = 352
+    top = 64
     object FileMI: TMenuItem
       Caption = 'Файл'
+      object NewMI: TMenuItem
+        Caption = 'Создать'
+        OnClick = NewMIClick
+      end
+      object OpenMI: TMenuItem
+        Caption = 'Открыть...'
+        OnClick = OpenMIClick
+      end
+      object SaveMI: TMenuItem
+        Caption = 'Сохранить'
+        OnClick = SaveMIClick
+      end
+      object SaveAsMI: TMenuItem
+        Caption = 'Сохранить как...'
+        OnClick = SaveAsMIClick
+      end
+      object SeparatorMI: TMenuItem
+        Caption = '-'
+      end
       object ExitMI: TMenuItem
         Caption = 'Выход'
         OnClick = ExitMIClick
@@ -226,7 +249,49 @@ object MainF: TMainF
       'ColorS=F0FBFF'
       'ColorT=A4A0A0'
     )
-    left = 504
-    top = 80
+    left = 437
+    top = 64
+  end
+  object SaveDialog: TSaveDialog
+    FileName = 'image.xml'
+    Filter = 'Файл XML|*.xml'
+    Options = [ofOverwritePrompt, ofEnableSizing, ofViewDetail]
+    left = 437
+    top = 136
+  end
+  object OpenDialog: TOpenDialog
+    Title = 'Открыть файл'
+    FileName = 'image.xml'
+    Filter = 'Файл XML|*.xml'
+    left = 352
+    top = 136
+  end
+  object ShapeEditPM: TPopupMenu
+    AutoPopup = False
+    left = 272
+    top = 64
+    object ShapeZindexMI: TMenuItem
+      Caption = 'Z-порядок'
+      object ShapeTopMI: TMenuItem
+        Caption = 'Поместить спереди'
+        OnClick = ShapeTopMIClick
+      end
+      object ShapeBottomMI: TMenuItem
+        Caption = 'Поместить сзади'
+        OnClick = ShapeBottomMIClick
+      end
+      object ShapeMoveUpMI: TMenuItem
+        Caption = 'На один вперёд'
+        OnClick = ShapeMoveUpMIClick
+      end
+      object ShapeMoveDownMI: TMenuItem
+        Caption = 'На один назад'
+        OnClick = ShapeMoveDownMIClick
+      end
+    end
+    object ShapeDeleteMI: TMenuItem
+      Caption = 'Удалить выбранное'
+      OnClick = ShapeDeleteMIClick
+    end
   end
 end

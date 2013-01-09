@@ -38,7 +38,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="10">
+    <Units Count="11">
       <Unit0>
         <Filename Value="draw.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -92,6 +92,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="DrawObjectEditors"/>
       </Unit9>
+      <Unit10>
+        <Filename Value="drawtypes.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DrawTypes"/>
+      </Unit10>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
