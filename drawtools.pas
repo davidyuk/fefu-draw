@@ -269,34 +269,6 @@ begin
         end;
       end;
   end;
-  {//вверх на один
-  last:= High(scene); //последняя фигура которую можно менять
-  for i := High(scene) downto 0 do
-    if scene[i].Selected then begin
-      if i < last Then SwapShapes(i, i+1)
-      else dec(last);
-    end;
-  //вниз на один
-  last:= 0; //последняя фигура которую можно менять
-  for i := 0 to High(scene) do
-    if scene[i].Selected then begin
-      if i > last Then SwapShapes(i, i-1)
-      else inc(last);
-    end;
-  //вверх полностью
-  last:= High(scene); //последняя фигура которую можно менять
-  for i := High(scene) downto 0 do
-    if scene[i].Selected then begin
-      SwapShapes(i, last);
-      dec(last);
-    end;
-  //вниз полностью
-  last:= 0; //последняя фигура которую можно менять
-  for i := 0 to High(scene) do
-    if scene[i].Selected then begin
-      SwapShapes(i, last);
-      inc(last);
-    end;}
 end;
 
 procedure TScene.ShapeSelDelete;

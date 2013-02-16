@@ -45,9 +45,13 @@ type
     function CreateParamObj:TPersistent; override;
     procedure MDown(point: TPoint; shift: TShiftState); override;
     procedure MUp(point: TPoint; shift: TShiftState); override;
+    procedure MMove(nP: TPoint; isDrawing: boolean; shift: TShiftState); override;
   end;
 
 implementation
+
+uses
+  DrawObjectInspector;
 
 { TTSPolyline }
 
@@ -59,7 +63,7 @@ end;
 
 procedure TTSPolyline.MDown(point: TPoint; shift: TShiftState);
 begin
-  if ssRight in Shift Then begin isTemp := true; exit; end;
+  if ssRight in Shift Then begin Inspector.LoadNew(CreateParamObj); exit; end;
   if isTemp Then begin
     Scene.addShape(Shape);
     isTemp:= false;
@@ -70,6 +74,13 @@ end;
 procedure TTSPolyline.MUp(point: TPoint; shift: TShiftState);
 begin
   //Не нужно создавать новую фигуру
+end;
+
+procedure TTSPolyline.MMove(nP: TPoint; isDrawing: boolean; shift: TShiftState);
+begin
+  if not isDrawing or isTemp then
+    exit;
+  Shape.Point(nP, false);
 end;
 
 { TTSFreeHand }

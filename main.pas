@@ -359,7 +359,7 @@ procedure TMainF.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 var ans: integer;
 begin
   if isEdited = true then begin
-    ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtWarning, [mbYes, mbNo, mbCancel], 0);
+    ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtInformation, [mbYes, mbNo, mbCancel], 0);
     if ans = mrCancel Then CanClose := false;
     if ans = mrYes Then SaveMIClick(nil);
   end;
@@ -370,7 +370,7 @@ procedure TMainF.NewMIClick(Sender: TObject);
 var ans: integer;
 begin
   if isEdited then begin
-    ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtWarning, [mbYes, mbNo, mbCancel], 0);
+    ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtInformation, [mbYes, mbNo, mbCancel], 0);
     if ans = mrCancel Then exit;
     if ans = mrYes Then SaveMIClick(nil);
   end;

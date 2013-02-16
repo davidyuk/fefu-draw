@@ -14,7 +14,6 @@ type
 
   { TShapeBase }
 
-  TPointRealArr = array of TPointReal;
   TShapeBase = class(TPersistent)
   private
     pC: TColor;
@@ -51,7 +50,6 @@ type
   public
     procedure Point(point: TPoint; new: Boolean = true); override;
     function BoundingRect:TRectReal; override;
-    procedure Select(aRect: TRect); override;
     procedure Draw(canvas: TCanvas); override;
     constructor Create; override;
     function PointOnShape(p: TPoint):boolean; override;
@@ -62,6 +60,7 @@ type
   TS2Line = class(TS2Point)
   public
     procedure Draw(canvas: TCanvas); override;
+    procedure Select(aRect: TRect); override;
   end;
 
   { TS2Fill }
@@ -83,13 +82,19 @@ type
   TS2FRectangle = class(TS2Fill)
   public
     procedure Draw(canvas: TCanvas); override;
+    procedure Select(aRect: TRect); override;
   end;
 
   { TS2FEllipce }
 
   TS2FEllipce = class(TS2Fill)
+  private
+    invisibleBorder: array of TPointReal;
+    size, pos: TPointReal;
+    procedure ReCalculateBorder;
   public
     procedure Draw(canvas: TCanvas); override;
+    procedure Select(aRect: TRect); override;
   end;
 
   { TS2FRectangleRound }
@@ -101,7 +106,7 @@ type
     property radius: integer read r write r;
   public
     procedure Draw(canvas: TCanvas); override;
-    constructor Create; override;
+    procedure Select(aRect: TRect); override;
   end;
 
   { TSMPoint }
@@ -116,6 +121,8 @@ type
   end;
 
 implementation
+
+uses types;
 
 procedure DrawSelect(canvas: TCanvas; boundingRect: TRectReal);
 var
@@ -171,14 +178,14 @@ end;
 
 procedure TSMPoint.Select(aRect: TRect);
 var
-  rect: TRect;
+  i: integer;
 begin
-  rect:= VP.WtoS(BoundingRect);
-  if (rect.Left >= aRect.Left) and
-     (rect.Right <= aRect.Right) and
-     (rect.Top >= aRect.Top) and
-     (rect.bottom <= aRect.Bottom) Then sel:= true
-  else sel:= false;
+  sel:= false;
+  for i:= 0 to High(pointArr)-1 do
+    if Intersection(aRect, VP.WToS(pointArr[i]), VP.WtoS(pointArr[i+1])) Then begin
+      sel:= true;
+      exit;
+    end;
 end;
 
 function TSMPoint.BoundingRect: TRectReal;
@@ -216,18 +223,82 @@ begin
   canvas.RoundRect(p1.x, p1.y, p2.x, p2.y, r, r);
 end;
 
-constructor TS2FRectangleRound.Create;
+procedure TS2FRectangleRound.Select(aRect: TRect);
 begin
-  inherited Create;
-  radius:= 1;
+  sel:= false;
+  if (abs(arect.right - arect.left) < 2) and (abs(arect.bottom - arect.top) < 2) Then exit;
+  sel:= Intersection(aRect, DrawTypes.Rect(p1, p2));
 end;
 
 { TS2FEllipce }
 
+procedure TS2FEllipce.ReCalculateBorder;
+const
+  quality = 101;
+var
+  i: integer;
+  t1, t2, aspectRatio: double;
+  center: TPointReal;
+begin
+  SetLength(invisibleBorder, quality);
+  pos.x:= min(pointArr[0].x, pointArr[1].x); //левый верхний угол фигуры
+  pos.y:= min(pointArr[0].y, pointArr[1].y);
+  size.x:= abs(pointArr[0].x-pointArr[1].x); //размер фигуры
+  size.y:= abs(pointArr[0].y-pointArr[1].y);
+  center.x:= pos.x + size.x/2; //абсолютное положение центра
+  center.y:= pos.y + size.y/2;
+  aspectRatio:= size.Y/size.X;
+  t1:= sqr(size.x/2);
+  for i:= 0 to 50 do begin
+    t2:= size.x/50*i;
+    invisibleBorder[50+i].x := pos.x+t2;
+    invisibleBorder[50-i].x := pos.x+t2;
+    t2:= sqr(t2 - size.X/2);
+    invisibleBorder[50+i].y := center.y + sqrt(t1-t2)*aspectRatio;
+    invisibleBorder[50-i].y := center.y - sqrt(t1-t2)*aspectRatio;
+  end;
+end;
+
 procedure TS2FEllipce.Draw(canvas: TCanvas);
+var
+  i: integer;
+  t: TPoint;
 begin
   inherited Draw(canvas);
   canvas.Ellipse(p1.x, p1.y, p2.x, p2.y);
+  //show invisible border
+  {if length(invisibleBorder) = 0 then exit;
+  canvas.Pen.Width := 1;
+  canvas.Pen.Color := clGreen;
+  canvas.Pen.Style := psSolid;
+  t:= VP.WtoS(invisibleBorder[0]);
+  canvas.MoveTo(t.x, t.y);
+  for i:= 1 to high(invisibleBorder) do begin
+    t:= VP.WtoS(invisibleBorder[i]);
+    canvas.LineTo(t.x, t.y);
+  end;}
+end;
+
+procedure TS2FEllipce.Select(aRect: TRect);
+var
+  i: integer;
+begin
+  if (size.x <> abs(pointArr[0].x-pointArr[1].x)) or
+     (size.y <> abs(pointArr[0].y-pointArr[1].y)) or
+     (pos.x <> min(pointArr[0].x, pointArr[1].x)) or
+     (pos.y <> min(pointArr[0].y, pointArr[1].y)) Then
+    ReCalculateBorder;
+  sel:= false;
+  for i:= 0 to High(invisibleBorder)-1 do
+    if Intersection(aRect, VP.WToS(invisibleBorder[i]), VP.WtoS(invisibleBorder[i+1])) Then begin
+      sel:= true;
+      exit;
+    end;
+  {size.x:= Max(p1.x, p2.x) - Min(p1.x, p2.x);
+  size.y:= Max(p1.y, p2.y) - Min(p1.y, p2.y);
+  pos.x := Min(p1.x, p2.x) + size.x div 2;
+  pos.y := Min(p1.y, p2.y) + size.y div 2;
+  sel := IntersectionWithEllipse(aRect.TopLeft, aRect.BottomRight, pos, size);}
 end;
 
 { TS2FRectangle }
@@ -236,6 +307,13 @@ procedure TS2FRectangle.Draw(canvas: TCanvas);
 begin
   inherited Draw(canvas);
   canvas.Rectangle(p1.x, p1.y, p2.x, p2.y);
+end;
+
+procedure TS2FRectangle.Select(aRect: TRect);
+begin
+  sel:= false;
+  if (abs(arect.right - arect.left) < 2) and (abs(arect.bottom - arect.top) < 2) Then exit;
+  sel:= Intersection(aRect, DrawTypes.Rect(p1, p2));
 end;
 
 { TShapeBase }
@@ -264,6 +342,11 @@ procedure TS2Line.Draw(canvas: TCanvas);
 begin
   inherited Draw(canvas);
   canvas.Line(p1, p2);
+end;
+
+procedure TS2Line.Select(aRect: TRect);
+begin
+  sel:= Intersection(aRect, p1, p2);
 end;
 
 
@@ -304,15 +387,6 @@ begin
   Result.Right := Max(pointArr[0].x, pointArr[1].x);
   Result.Top := Min(pointArr[0].y, pointArr[1].y);
   Result.Bottom := Max(pointArr[0].y, pointArr[1].y);
-end;
-
-procedure TS2Point.Select(aRect: TRect);
-begin
-  if (p1.x >= aRect.Left) and (p1.x <= aRect.Right) and
-     (p2.x >= aRect.Left) and (p2.x <= aRect.Right) and
-     (p1.y >= aRect.Top) and (p1.y <= aRect.Bottom) and
-     (p2.y >= aRect.Top) and (p2.y <= aRect.Bottom) then sel:= true
-  else sel:= false;
 end;
 
 procedure TS2Point.Draw(canvas: TCanvas);
