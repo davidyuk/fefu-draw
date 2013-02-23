@@ -31,7 +31,7 @@ type
 implementation
 
 uses
-  Main, DrawTypes;
+  Main, DrawTypes, DrawScene;
 
 { TTMouse }
 
@@ -128,7 +128,7 @@ end;
 
 initialization
 
-ToolContainer.addTool(TTMouse, 'Рука');
+ToolContainer.addTool(TTMouse, 'Выделение');
 
 end.
 

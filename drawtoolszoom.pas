@@ -2,6 +2,11 @@ unit DrawToolsZoom;
 
 {$mode objfpc}{$H+}{$M+}
 
+{
+Этот модуль содержит описание инструмента масштабирования.
+Состояние: требуется переработка.
+}
+
 interface
 
 uses
@@ -51,6 +56,8 @@ type
   end;
 
 implementation
+
+uses DrawScene;
 
 { TTShift }
 

@@ -2,59 +2,62 @@ unit DrawTypes;
 
 {$mode objfpc}{$H+}
 
+{
+Этот модуль содержит описание дополнительных типов данных, используемых в приложении,
+описание перегруженных методов и функций для работы с ними.
+Состояние: более-менее, есть логические ошибки.
+}
+
 interface
 
 uses
   Classes, SysUtils, Math;
 
 type
+  { TRectFloat }
 
-
-  { TRectReal }
-
-  TRectReal = record
+  TRectFloat = record
     Left, Right, Top, Bottom: double;
   end;
 
-  { TPointReal }
+  { TPointFloat }
 
-  TPointReal = record
+  TPointFloat = record
     X, Y: double;
   end;
 
-  TPointRealArr = array of TPointReal;
+  TPointFloatArr = array of TPointFloat;
 
-function PointReal(p1, p2: Double): TPointReal;
-function PointReal(p: TPoint): TPointReal;
+function PointFloat(p1, p2: Double): TPointFloat;
+function PointFloat(p: TPoint): TPointFloat;
 function Rect(p1, p2: TPoint):TRect; overload;
-function RectReal(p1, p2: TPointReal):TRectReal;
+function RectReal(p1, p2: TPointFloat):TRectFloat;
 function Intersection(a1, a2, b1, b2: TPoint): boolean;
 function Intersection(rect: TRect; p1, p2: TPoint): boolean; overload;
 function Intersection(rect1, rect2: TRect): boolean; overload;
-function IntersectionWithEllipse(line1, line2, ellipsePos, ellipseSize: TPoint): boolean;
 function IsPointIn(p, p1, p2: TPoint):boolean;
 function IsPointIn(p: TPoint; rect: TRect):boolean; overload;
 function IsRectIn(rect1, rect2: TRect): boolean;
-operator +(a, b: TPointReal):TPointReal;
-operator -(a, b: TPointReal):TPointReal;
+operator +(a, b: TPointFloat):TPointFloat;
+operator -(a, b: TPointFloat):TPointFloat;
 operator +(a, b: TPoint):TPoint;
 operator -(a, b: TPoint):TPoint;
-operator >(a, b: TPointReal):boolean;
-operator <(a, b: TPointReal):boolean;
-operator >=(a, b: TPointReal):boolean;
-operator <=(a, b: TPointReal):boolean;
-operator /(a: TPointReal; b: double):TPointReal;
-operator *(a: TPointReal; b: Double):TPointReal;
+operator >(a, b: TPointFloat):boolean;
+operator <(a, b: TPointFloat):boolean;
+operator >=(a, b: TPointFloat):boolean;
+operator <=(a, b: TPointFloat):boolean;
+operator /(a: TPointFloat; b: double):TPointFloat;
+operator *(a: TPointFloat; b: Double):TPointFloat;
 
 implementation
 
-function PointReal(p1, p2: Double): TPointReal;
+function PointFloat(p1, p2: Double): TPointFloat;
 begin
   Result.X := p1;
   Result.Y := p2;
 end;
 
-function RectReal(p1, p2: TPointReal): TRectReal;
+function RectReal(p1, p2: TPointFloat): TRectFloat;
 begin
   Result.Left:= p1.x;
   Result.Top:= p1.y;
@@ -92,21 +95,6 @@ begin
   intersec.x:= Round((cc2*cb1-cc1*cb2)/(ca1*cb2-ca2*cb1));
   intersec.y:= Round((cc1*ca2-ca1*cc2)/(ca1*cb2-ca2*cb1));
   if IsPointIn(intersec, a1, a2) and IsPointIn(intersec, b1, b2) Then result:= true;
-  {c1:= b2.x-b1.x; //расстояние между точками второй прямой в проекции на оx
-  c2:= b2.y-b1.y; //расстояние между точками второй прямой в проекции на оy
-  c3:= a2.x-a1.x; //расстояние между точками первой прямой в проекции на оx
-  c4:= a2.y-a1.y; //расстояние между точками первой прямой в проекции на оy
-
-  v1:=c1*(a1.y-b1.y)-c2*(a1.x-b1.x);
-  v2:=c1*(a2.y-b1.y)-c2*(a2.x-b1.x);
-  v3:=c3*(b1.y-a1.y)-c4*(b1.x-a1.x);
-  v4:=c3*(b2.y-a1.y)-c4*(b2.x-a1.x);
-
-  v1:=(b2.x-b1.x)*(a1.y-b1.y)-(b2.y-b1.y)*(a1.x-b1.x);
-  v2:=(b2.x-b1.x)*(a2.y-b1.y)-(b2.y-b1.y)*(a2.x-b1.x);
-  v3:=(a2.x-a1.x)*(b1.y-a1.y)-(a2.y-a1.y)*(b1.x-a1.x);
-  v4:=(a2.x-a1.x)*(b2.y-a1.y)-(a2.y-a1.y)*(b2.x-a1.x);
-  Result:=(v1*v2<0) and (v3*v4<0);}
 end;
 
 function Intersection(rect: TRect; p1, p2: TPoint): boolean;
@@ -131,45 +119,6 @@ begin
            Intersection(rect2, Point(rect1.Right, rect1.Top), Point(rect1.Right, rect1.Bottom));
 end;
 
-function IntersectionWithEllipse(line1, line2, ellipsePos, ellipseSize: TPoint
-  ): boolean;
-var
-  lA, lB, lC, eA, eB: integer;
-  a, b, c, D: double;
-  inters, inters2: TPoint;
-begin
-  //неудалась функция
-  result:= false;
-  if (abs(line1.x - line2.x) < 2) and (abs(line1.y - line2.y) < 2) Then exit;
-  line1.x -= ellipsePos.x;
-  line2.x -= ellipsePos.x;
-  line1.y -= ellipsePos.y;
-  line2.y -= ellipsePos.y;
-  lA:= line1.y-line2.y;
-  lB:= line2.x-line1.x;
-  lC:= line1.x*line2.y-line1.y*line2.x;
-
-  eA:= round(ellipseSize.x / 2);
-  eB:= round(ellipseSize.y / 2);
-
-  a:= sqr(eB) + sqr(lA)*sqr(eA)/sqr(lB);
-  b:= (lA*lC*sqr(eA)*-2)/sqr(lB);
-  c:= sqr(lC)*sqr(eA)/sqr(lB)-sqr(eA)*sqr(eB);
-  D:= sqrt(sqr(b)-4*a*c);
-
-  try
-  inters.x:= round((-b+D)/(2*a));
-  inters2.x:= round((-b-D)/(2*a));
-  inters.y:= round((-lC-lA*inters.x)/lB);
-  inters2.y:= round((-lC-lA*inters.x)/lB);
-  except
-    result:= false;
-    exit;
-  end;
-
-  result:= IsPointIn(inters, line1, line2) or IsPointIn(inters2, line1, line2);
-end;
-
 function IsPointIn(p, p1, p2: TPoint): boolean;
 begin
   result:= (p.X <= Max(p1.x, p2.x)) and (p.X >= min(p1.x, p2.x)) and
@@ -189,63 +138,63 @@ begin
            IsPointIn(Point(rect1.right, rect1.bottom), rect2);
 end;
 
-operator+(a, b: TPointReal): TPointReal;
+operator+(a, b: TPointFloat): TPointFloat;
 begin
-  a.X += b.X;
-  a.Y += b.Y;
+  result.x:= a.X + b.X;
+  result.y:= a.Y + b.Y;
 end;
 
-operator-(a, b: TPointReal): TPointReal;
+operator-(a, b: TPointFloat): TPointFloat;
 begin
-  a.X -= b.X;
-  a.Y -= b.Y;
+  result.x:= a.X - b.X;
+  result.y:= a.Y - b.Y;
 end;
 
 operator-(a, b: TPoint): TPoint;
 begin
-  a.X -= b.X;
-  a.Y -= b.Y;
+  result.x:= a.X - b.X;
+  result.x:= a.Y - b.Y;
 end;
 
-operator>(a, b: TPointReal): boolean;
+operator>(a, b: TPointFloat): boolean;
 begin
   result:= (a.x > b.x) and (a.y > b.y);
 end;
 
-operator<(a, b: TPointReal): boolean;
+operator<(a, b: TPointFloat): boolean;
 begin
   result:= (a.x < b.x) and (a.y < b.y);
 end;
 
-operator>=(a, b: TPointReal): boolean;
+operator>=(a, b: TPointFloat): boolean;
 begin
   result:= (a.x >= b.x) and (a.y >= b.y);
 end;
 
-operator<=(a, b: TPointReal): boolean;
+operator<=(a, b: TPointFloat): boolean;
 begin
   result:= (a.x <= b.x) and (a.y <= b.y);
 end;
 
-operator/(a: TPointReal; b: double): TPointReal;
+operator/(a: TPointFloat; b: double): TPointFloat;
 begin
-  a.X := a.X / b;
-  a.Y := a.Y / b;
+  result.x := a.X / b;
+  result.y := a.Y / b;
 end;
 
 operator+(a, b: TPoint): TPoint;
 begin
-  a.X += b.X;
-  a.Y += b.Y;
+  result.x := a.x+b.x;
+  result.y := a.y+b.y;
 end;
 
-operator*(a: TPointReal; b: Double): TPointReal;
+operator*(a: TPointFloat; b: Double): TPointFloat;
 begin
-  a.X *= b;
-  a.Y *= b;
+  result.x := a.x*b;
+  result.y := a.y*b;
 end;
 
-function PointReal(p: TPoint): TPointReal;
+function PointFloat(p: TPoint): TPointFloat;
 begin
   Result.X := p.x;
   Result.Y := p.y;

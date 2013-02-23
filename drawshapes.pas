@@ -20,16 +20,16 @@ type
     pW: Integer;
     pS: TFPPenStyle;
     sel: boolean;
-    pointArr: array of TPointReal;
+    pointArr: array of TPointFloat;
   public
     procedure Draw(canvas: TCanvas); virtual;
     procedure Point(point: TPoint; new: Boolean = true); virtual; abstract;
-    function BoundingRect:TRectReal; virtual; abstract;
+    function BoundingRect:TRectFloat; virtual; abstract;
     property Selected: boolean read sel write sel;
     procedure Select(aRect: TRect); virtual; abstract;
     function PointOnShape(p: TPoint):boolean; virtual; abstract;
     constructor Create; virtual;
-    property Points: TPointRealArr read pointArr write pointArr;
+    property Points: TPointFloatArr read pointArr write pointArr;
     procedure setPointsLength(i: integer);
   published
     property penC: TColor read pC write pC;
@@ -49,7 +49,7 @@ type
     property p2: TPoint read p2read write p2write;
   public
     procedure Point(point: TPoint; new: Boolean = true); override;
-    function BoundingRect:TRectReal; override;
+    function BoundingRect:TRectFloat; override;
     procedure Draw(canvas: TCanvas); override;
     constructor Create; override;
     function PointOnShape(p: TPoint):boolean; override;
@@ -85,12 +85,12 @@ type
     procedure Select(aRect: TRect); override;
   end;
 
-  { TS2FEllipce }
+  { TS2FEllipse }
 
-  TS2FEllipce = class(TS2Fill)
+  TS2FEllipse = class(TS2Fill)
   private
-    invisibleBorder: array of TPointReal;
-    size, pos: TPointReal;
+    invisibleBorder: array of TPointFloat;
+    size, pos: TPointFloat;
     procedure ReCalculateBorder;
   public
     procedure Draw(canvas: TCanvas); override;
@@ -116,7 +116,7 @@ type
     procedure Point(point: TPoint; new: Boolean = true); override;
     procedure Draw(canvas: TCanvas); override;
     procedure Select(aRect: TRect); override;
-    function BoundingRect:TRectReal; override;
+    function BoundingRect:TRectFloat; override;
     function PointOnShape(p: TPoint):boolean; override;
   end;
 
@@ -124,7 +124,7 @@ implementation
 
 uses types;
 
-procedure DrawSelect(canvas: TCanvas; boundingRect: TRectReal);
+procedure DrawSelect(canvas: TCanvas; boundingRect: TRectFloat);
 var
   t: TRect;
   m: integer;
@@ -188,7 +188,7 @@ begin
     end;
 end;
 
-function TSMPoint.BoundingRect: TRectReal;
+function TSMPoint.BoundingRect: TRectFloat;
 var i: integer;
 begin
   Result.Left:= points[0].X;
@@ -230,15 +230,15 @@ begin
   sel:= Intersection(aRect, DrawTypes.Rect(p1, p2));
 end;
 
-{ TS2FEllipce }
+{ TS2FEllipse }
 
-procedure TS2FEllipce.ReCalculateBorder;
+procedure TS2FEllipse.ReCalculateBorder;
 const
   quality = 101;
 var
   i: integer;
   t1, t2, aspectRatio: double;
-  center: TPointReal;
+  center: TPointFloat;
 begin
   SetLength(invisibleBorder, quality);
   pos.x:= min(pointArr[0].x, pointArr[1].x); //левый верхний угол фигуры
@@ -259,14 +259,14 @@ begin
   end;
 end;
 
-procedure TS2FEllipce.Draw(canvas: TCanvas);
+procedure TS2FEllipse.Draw(canvas: TCanvas);
 var
   i: integer;
   t: TPoint;
 begin
   inherited Draw(canvas);
   canvas.Ellipse(p1.x, p1.y, p2.x, p2.y);
-  //show invisible border
+  //показать скрытую часть эллипса
   {if length(invisibleBorder) = 0 then exit;
   canvas.Pen.Width := 1;
   canvas.Pen.Color := clGreen;
@@ -279,7 +279,7 @@ begin
   end;}
 end;
 
-procedure TS2FEllipce.Select(aRect: TRect);
+procedure TS2FEllipse.Select(aRect: TRect);
 var
   i: integer;
 begin
@@ -381,7 +381,7 @@ begin
   else p2:= point;
 end;
 
-function TS2Point.BoundingRect: TRectReal;
+function TS2Point.BoundingRect: TRectFloat;
 begin
   Result.Left := Min(pointArr[0].x, pointArr[1].x);
   Result.Right := Max(pointArr[0].x, pointArr[1].x);
@@ -419,7 +419,7 @@ end;
 
 initialization
 
-RegisterClass(TS2FEllipce);
+RegisterClass(TS2FEllipse);
 RegisterClass(TS2FRectangle);
 RegisterClass(TS2FRectangleRound);
 RegisterClass(TS2Line);

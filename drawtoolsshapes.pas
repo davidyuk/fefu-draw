@@ -20,9 +20,9 @@ type
     function CreateParamObj:TPersistent; override;
   end;
 
-  { TTSEllipce }
+  { TTSEllipse }
 
-  TTSEllipce = class(TTShape)
+  TTSEllipse = class(TTShape)
     function CreateParamObj:TPersistent; override;
   end;
 
@@ -51,7 +51,7 @@ type
 implementation
 
 uses
-  DrawObjectInspector;
+  DrawObjectInspector, DrawScene;
 
 { TTSPolyline }
 
@@ -107,11 +107,11 @@ begin
   Result:=inherited CreateParamObj;
 end;
 
-{ TTSEllipce }
+{ TTSEllipse }
 
-function TTSEllipce.CreateParamObj: TPersistent;
+function TTSEllipse.CreateParamObj: TPersistent;
 begin
-  Shape := TS2FEllipce.Create;
+  Shape := TS2FEllipse.Create;
   Result:=inherited CreateParamObj;
 end;
 
@@ -136,7 +136,7 @@ initialization
 ToolContainer.addTool(TTSFreeHand,'Карандаш');
 ToolContainer.addTool(TTSLine,'Линия');
 ToolContainer.addTool(TTSRectangle,'Прямоугольник');
-ToolContainer.addTool(TTSEllipce,'Эллипс');
+ToolContainer.addTool(TTSEllipse,'Эллипс');
 ToolContainer.addTool(TTSRectangleRound,'Прямоугольник со скругленными углами');
 ToolContainer.addTool(TTSPolyline,'Ломоная');
 

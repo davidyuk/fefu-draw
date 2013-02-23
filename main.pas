@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, Math, FileUtil, Graphics, Forms, Controls,
   Dialogs, ExtCtrls, Menus, ComCtrls, StdCtrls, Buttons, Grids, Spin, TypInfo,
-  DrawTools, DrawObjectInspector, DrawZoom, types, XMLWrite, XMLRead, DOM;
+  DrawTools, DrawObjectInspector, DrawZoom, types, XMLWrite, XMLRead, DOM, DrawScene;
 
 type
 
@@ -134,7 +134,8 @@ begin
     m:= TBitmap.Create;
     m.LoadFromFile('icons/'+ToolContainer.tool[i].ClassName+'.bmp');
     b := TSpeedButton.Create(ToolsP);
-    b.HelpKeyword:= ToolContainer.tool[i].name;
+    b.ShowHint:= true;
+    b.Hint := ToolContainer.tool[i].Name;
     b.Name := 'Tool' + IntToStr(i);
     b.Parent := ToolsP;
     b.Glyph := m;

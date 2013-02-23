@@ -38,7 +38,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="11">
+    <Units Count="12">
       <Unit0>
         <Filename Value="draw.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -97,6 +97,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="DrawTypes"/>
       </Unit10>
+      <Unit11>
+        <Filename Value="drawscene.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DrawScene"/>
+      </Unit11>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
