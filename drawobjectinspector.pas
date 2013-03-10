@@ -5,7 +5,7 @@ unit DrawObjectInspector;
 interface
 
 uses
-  Classes, LCLType, typinfo, Graphics, Spin, ExtCtrls, StdCtrls, DrawShapes, Controls, FPCanvas;
+  Classes, typinfo, Graphics, ExtCtrls, StdCtrls;
 
 type
 

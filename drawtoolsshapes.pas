@@ -5,7 +5,7 @@ unit DrawToolsShapes;
 interface
 
 uses
-  Classes, SysUtils, DrawShapes, Controls, DrawTools;
+  Classes, DrawShapes, DrawTools;
 
 type
   { TTSLine }

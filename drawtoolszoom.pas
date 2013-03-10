@@ -2,15 +2,10 @@ unit DrawToolsZoom;
 
 {$mode objfpc}{$H+}{$M+}
 
-{
-Этот модуль содержит описание инструмента масштабирования.
-Состояние: требуется переработка.
-}
-
 interface
 
 uses
-  Classes, SysUtils, DrawTools, DrawShapes, Controls, Graphics , DrawZoom;
+  Classes, DrawTools, DrawShapes, Graphics , DrawZoom, DrawScene;
 
 type
 
@@ -20,6 +15,7 @@ type
 
   TTScaleP = class(TPersistent)
   private
+    notFirstChange: boolean;
     procedure SetScale(scale: TScale);
     function GetScale: TScale;
   published
@@ -57,7 +53,6 @@ type
 
 implementation
 
-uses DrawScene;
 
 { TTShift }
 
@@ -95,7 +90,10 @@ end;
 
 procedure TTScaleP.SetScale(scale: TScale);
 begin
-  VP.Scale:= scale;
+  if not(notFirstChange) Then //для параметров инструментов изначально
+    notFirstChange:=true      //устанавливаются стандартные значения
+  else
+    VP.Scale:= scale;
 end;
 
 function TTScaleP.GetScale: TScale;

@@ -2,15 +2,10 @@ unit DrawZoom;
 
 {$mode objfpc}{$H+}
 
-{
-Этот модуль содержит описание класса для преобразования координат, описание функции обновления позиций scroll bar'ов.
-Состояние: требуется переработка.
-}
-
 interface
 
 uses
-  Classes, SysUtils, Controls, Graphics, Forms, StdCtrls, ExtCtrls, Math, DrawTypes;
+  Classes, Forms, StdCtrls, ExtCtrls, Math, DrawTypes;
 
 type
 
@@ -18,15 +13,16 @@ type
 
   TViewport = class
   const
-    c_BorderMargin = 20;
+    maxScale = 100;
+    minScale = 0.03;
   private
-    Border: TRectFloat;                   //общий bounding rect
     scl: Double;                        //масштаб
-    WorldPos, VisPart: TPointFloat;       //положение центра VP в мировых координатах,
-    PBCenter: TPoint;                    //1/4 размера PB
-    HrSbP, VrSbP: Integer;               //Положения SB
+    WorldPos: TPointFloat;              //положение центра VP в мировых координатах,
+    HrSbP, VrSbP: Integer;              //Положения SB
+    VPsize: TPoint;                     //Размер видимой части
+    procedure SetScale(AValue: double);
   public
-    property Scale: real read scl write scl;
+    property Scale: double read scl write SetScale;
     function WtoS(world: TPointFloat):TPoint;                          //Мировые -> Экранные
     function StoW(screen: TPoint):TPointFloat;                         //Экранные -> Мировые
     function WtoS(world: TRectFloat):TRect; overload;
@@ -45,20 +41,31 @@ var
 implementation
 
 uses
-  DrawTools, DrawObjectInspector, DrawScene;
+  DrawObjectInspector, DrawScene;
 
 { TViewport }
 
+procedure TViewport.SetScale(AValue: double);
+var
+  p1, p2: TPointFloat;
+begin
+  if (scl=AValue) or (AValue>maxScale) or (AValue<minScale) then Exit;
+  p1:= StoW(Point(VPsize.x, VPsize.y));
+  scl:= AValue;
+  p2:= StoW(Point(VPsize.x, VPsize.y));
+  WorldPos += (p1-p2)/2;
+end;
+
 function TViewport.WtoS(world: TPointFloat): TPoint;
 begin
-  result.x:= round((world.x - WorldPos.X)*scl)+PBCenter.x;
-  result.y:= round((world.y - WorldPos.y)*scl)+PBCenter.y;
+  result.x:= trunc((world.x - WorldPos.X)*scl);
+  result.y:= trunc((world.y - WorldPos.y)*scl);
 end;
 
 function TViewport.StoW(screen: TPoint): TPointFloat;
 begin
-  Result.x:= (screen.x - PBCenter.x)/scl + WorldPos.x;
-  Result.y:= (screen.y - PBCenter.y)/scl + WorldPos.y;
+  Result.x:= screen.x/scl + WorldPos.x;
+  Result.y:= screen.y/scl + WorldPos.y;
 end;
 
 function TViewport.WtoS(world: TRectFloat): TRect;
@@ -68,7 +75,7 @@ end;
 
 function TViewport.StoW(world: TRect): TRectFloat;
 begin
-  Result:= RectReal(StoW(Point(world.Left, world.Top)), StoW(Point(world.Right, world.Bottom)));
+  Result:= RectFloat(StoW(Point(world.Left, world.Top)), StoW(Point(world.Right, world.Bottom)));
 end;
 
 procedure TViewport.SetWorldPosShift(shift: TPoint);
@@ -80,102 +87,86 @@ end;
 procedure TViewport.ReCalculate(PaintB: TPaintbox; HrSb,
   VrSb: TScrollBar);
 var
-  i, HrSbLen, VrSbLen: integer;
-  t: TRectFloat;
-  p1, p2, all: TPointFloat;
+  worldSize: TPointFloat;
+  pf1, pf2: TPointFloat;
+  br: TRectFloat;
+  a: integer;
 begin
-  PBCenter.X:= PaintB.Width div 2;
-  PBCenter.Y:= PaintB.Height div 2;
+  VPsize.X:= PaintB.Width;
+  VPsize.Y:= PaintB.Height;
 
-  //вычисление и отрисовка общего BoundingRect
-  if length(Scene.Shapes) <> 0 Then begin
-    Border:= Scene.Shapes[0].BoundingRect;
-    for i:= 0 to High(Scene.Shapes) do begin
-      t:= Scene.Shapes[i].BoundingRect;
-      if Border.Left > t.Left Then Border.Left:= t.Left;
-      if Border.Right < t.Right Then Border.Right:= t.Right;
-      if Border.Top > t.Top Then Border.Top:= t.Top;
-      if Border.Bottom < t.Bottom Then Border.Bottom:= t.Bottom;
-    end;
-    PaintB.Canvas.Pen.Color:= $ff8888;
-    PaintB.Canvas.Pen.Width:= 1;
-    PaintB.Canvas.Pen.Style:= psSolid;
-    PaintB.Canvas.Brush.Style := bsClear;
-    Border.Left -= c_BorderMargin*scl;
-    Border.Top -= c_BorderMargin*scl;
-    Border.Right += c_BorderMargin*scl;
-    Border.Bottom += c_BorderMargin*scl;
-    p1.X:= Border.Left;
-    p1.Y:= Border.Top;
-    p2.X:= Border.Right;
-    p2.Y:= Border.Bottom;
+  br := Scene.GetImageSize;
 
-    //установка значений ScrollBar
-    HrSbLen := HrSb.Max-HrSb.Min;
-    VrSbLen := VrSb.Max-VrSb.Min;
-    VisPart.X:= PaintB.Width / scl; //видимая часть
-    VisPart.Y:= PaintB.Height / scl;
-    all.x := Border.Right-Border.Left+VisPart.X; //сторона холста+видимая часть
-    all.y := Border.Bottom-Border.Top+VisPart.Y;
-    //ОтображаемаяЧастьW / (РазмерW+ОтображаемаяЧасть) * ДиаппазонЗначений
-    HrSb.PageSize := trunc(VisPart.X  / all.x * HrSbLen);
-    VrSb.PageSize := trunc(VisPart.Y  / all.y * VrSbLen);
-    //Расстояние(От меньшего края до позиции точки)/(РазмерW+ОтображаемаяЧасть) * ДиаппазонЗначений
-    if HrSb.PageSize < HrSb.Max Then begin
-      HrSb.Visible:= true;
-      If HrSb.Position <> HrSbP Then
-        WorldPos.X:= Border.Left+(Border.Right-Border.Left)/(HrSbLen-HrSb.PageSize)*HrSb.position
-      else
-        HrSb.Position := trunc((WorldPos.X - Border.Left)/all.x*HrSbLen);
-    end else HrSb.Visible:= false;
-    if VrSb.PageSize < VrSb.Max Then begin
-      VrSb.Visible:= true;
-      If VrSb.Position <> VrSbP Then
-        WorldPos.Y:= Border.Top+(Border.Bottom-Border.Top)/(VrSbLen-VrSb.PageSize)*VrSb.position
-      else
-        VrSb.Position := trunc((WorldPos.Y - Border.Top)/all.y*VrSbLen);
-    end else VrSb.Visible:= false;
+  pf1:= StoW(Point(0, 0));
+  if br.Left > pf1.x Then br.left := pf1.x;
+  if br.Top > pf1.y Then br.Top := pf1.y;
+  pf2:= StoW(Point(PaintB.Width, PaintB.Height));
+  if br.Right < pf2.x Then br.Right := pf2.x;
+  if br.Bottom < pf2.y Then br.Bottom := pf2.y;
+  worldSize.X := br.Right-br.Left;
+  worldSize.Y := br.Bottom-br.Top;
+  if worldSize.x * worldSize.y = 0 Then exit;
+
+  a:= HrSb.Max-HrSb.Min;
+  HrSb.PageSize := round(PaintB.Width / (worldSize.X*scl) * a);
+  if HrSb.PageSize >= a Then
+    HrSb.Visible := false
+  else begin
+    HrSb.Visible := true;
+    if (HrSbP = HrSb.Position) Then
+      HrSb.Position := round((WorldPos.X - br.Left)/worldSize.X *a)
+    else
+      WorldPos.X := HrSb.Position/a*worldSize.X+br.Left;
     HrSbP:= HrSb.Position;
-    VrSbP:= VrSb.Position;
+  end;
 
-    PaintB.Canvas.Rectangle(VP.WtoS(p1).X, VP.WtoS(p1).Y, VP.WtoS(p2).X, VP.WtoS(p2).Y);
-  end else begin
-    HrSb.Visible:= false;
-    VrSb.Visible:= false;
+  a:= VrSb.Max-VrSb.Min;
+  VrSb.PageSize := round(PaintB.Height / (worldSize.Y*scl) *a);
+  if VrSb.PageSize >= a Then
+    VrSb.Visible:= false
+  else begin
+    VrSb.Visible:= true;
+    if (VrSbP = VrSb.Position) Then
+      VrSb.Position := round((WorldPos.Y - br.Top)/worldSize.Y *a)
+    else
+      WorldPos.Y := VrSb.Position/a*worldSize.Y+br.Top;
+    VrSbP:= VrSb.Position;
   end;
 end;
 
 procedure TViewport.ScaleTo(p1, p2: TPoint);
-var p1r, p2r: TPointFloat;
+var
+  p1r, p2r: TPointFloat;
+  t: TRectFloat;
 begin
   if (p1.x = p2.x) and (p1.y = p2.y) then begin
-    p1r.x:= Border.Left;
-    p1r.Y:= Border.Top;
-    p2r.x:= Border.Right;
-    p2r.Y:= Border.Bottom;
+    t:= Scene.GetImageSize;
+    p1r.x:= t.Left;
+    p1r.Y:= t.Top;
+    p2r.x:= t.Right;
+    p2r.Y:= t.Bottom;
   end else begin
     p1r:= StoW(p1);
     p2r:= StoW(p2);
   end;
-  WorldPos := (p1r +p2r ) /2;
-  if (abs(p1r.X - p2r.X)/VisPart.X) < (abs(p1r.Y - p2r.Y)/VisPart.Y) then
-    scl:= (VisPart.Y*scl)/abs(p1r.Y-p2r.Y)
-  else scl:= (VisPart.X*scl)/abs(p1r.X-p2r.X);
+  scl := min(VPsize.Y/abs(p1r.Y-p2r.Y), VPsize.X/abs(p1r.X-p2r.X));
+  if scl < minScale Then scl := minScale;
+  if scl > maxScale Then scl := maxScale;
+  if p1r < p2r Then
+    WorldPos:= p1r - (PointFloat(VPsize)/scl-(p2r-p1r))/2
+  else
+    WorldPos:= p2r - (PointFloat(VPsize)/scl-(p1r-p2r))/2;
   Inspector.Refresh;
 end;
 
 procedure TViewport.ScaleMouseWhell(point: TPoint; way: boolean);
-var
-  step: real;
-  t1, t2: TPointFloat;
+var t: TPointFloat;
 begin
-  t1:= VP.StoW(point);
-  step:= 2;
-  if not way then step := 1/step;
-  if (VP.Scale < 0.03) and (not way) Then exit;
-  scl := scl * step;
-  t2 := VP.StoW(point);
-  WorldPos:= WorldPos - (t2-t1);
+  if ((VP.Scale < minScale) and (not way)) or ((VP.Scale > maxScale) and way) Then exit;
+  t:= VP.StoW(point);
+  if not way then scl /= 2
+  else scl *= 2;
+  WorldPos:= WorldPos - (VP.StoW(point)-t);
 end;
 
 constructor TViewport.Create();

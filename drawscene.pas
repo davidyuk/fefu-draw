@@ -5,7 +5,7 @@ unit DrawScene;
 interface
 
 uses
-  Classes, SysUtils, Graphics, DOM, typinfo, DrawShapes, Controls, DrawTypes, Dialogs, DrawZoom;
+  Classes, SysUtils, Graphics, DOM, typinfo, DrawShapes, DrawTypes, Dialogs, DrawZoom;
 
 type
   ArrOfShape = array of TShapeBase;
@@ -14,7 +14,7 @@ type
 
   TScene = class
   const
-    xmlVer = '1';
+    c_xmlVer = '1';
   private
     scene: ArrOfShape;
     procedure SwapShapes(e1, e2:integer);
@@ -30,6 +30,7 @@ type
     procedure ShapeSelZIndex(byOne, up: Boolean);
     procedure ShapeSelDelete;
     procedure ShapeSelShift(shift: TPoint);
+    function GetImageSize: TRectFloat;
   end;
 
 var
@@ -65,7 +66,7 @@ begin
 end;
 
 function TScene.SetXML(imageFile: TXMLDocument): boolean;
-function SpiltPoint(t: string):TPointFloat; //5,6
+function SpiltPoint(t: string):TPointFloat;
 var
   s: string;
 begin
@@ -119,7 +120,7 @@ var
 begin
   result:= TXMLDocument.Create;
   RootNode := Result.CreateElement('file');
-  TDOMElement(RootNode).SetAttribute('version', xmlVer);
+  TDOMElement(RootNode).SetAttribute('version', c_xmlVer);
   Result.AppendChild(RootNode);
   RootNode:= Result.DocumentElement;
   for i:= 0 to high(scene) do begin
@@ -199,10 +200,29 @@ begin
   for i:= 0 to High(scene) do
     for j:= 0 to High(scene[i].Points) do begin
       if not scene[i].Selected Then Continue;
-      scene[i].Points[j].X += shift.x / VP.Scale;
-      scene[i].Points[j].Y += shift.y / VP.Scale;
-      //scene[i].Points[j] += PointFloat(shift)*VP.Scale;
+      //scene[i].Points[j].X += shift.x / VP.Scale;
+      //scene[i].Points[j].Y += shift.y / VP.Scale;
+      scene[i].Points[j] += PointFloat(shift)/VP.Scale;
     end;
+end;
+
+function TScene.GetImageSize: TRectFloat;
+var
+  t: TRectFloat;
+  i: integer;
+begin
+  if length(scene) = 0 Then begin
+    result := RectFloat(PointFloat(0,0),PointFloat(0,0));
+    exit;
+  end;
+  result:= scene[0].BoundingRect;
+  for i:= 1 to High(scene) do begin
+    t:= scene[i].BoundingRect;
+    if result.Left > t.Left Then result.Left:= t.Left;
+    if result.Right < t.Right Then result.Right:= t.Right;
+    if result.Top > t.Top Then result.Top:= t.Top;
+    if result.Bottom < t.Bottom Then result.Bottom:= t.Bottom;
+  end;
 end;
 
 procedure TScene.SwapShapes(e1, e2: integer);

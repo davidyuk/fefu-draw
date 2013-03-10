@@ -1,7 +1,7 @@
 object MainF: TMainF
-  Left = 1944
+  Left = 133
   Height = 561
-  Top = 370
+  Top = 171
   Width = 544
   Caption = 'Векторный редактор'
   ClientHeight = 541
@@ -11,7 +11,7 @@ object MainF: TMainF
   Menu = MainMenu
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  LCLVersion = '1.0.4.0'
+  LCLVersion = '1.0.6.0'
   object LeftP: TPanel
     Left = 0
     Height = 416
@@ -135,11 +135,11 @@ object MainF: TMainF
     Width = 17
     Align = alRight
     BorderSpacing.Bottom = 17
+    Enabled = False
     Kind = sbVertical
     Max = 999
     PageSize = 999
     TabOrder = 2
-    Visible = False
     OnScroll = VerticalSBScroll
   end
   object MainP: TPanel
@@ -162,10 +162,9 @@ object MainF: TMainF
       Max = 999
       PageSize = 999
       TabOrder = 0
-      Visible = False
       OnScroll = HorizontalSBScroll
     end
-    object MainPB: TPaintBox
+    object PB: TPaintBox
       Left = 0
       Height = 399
       Top = 0
@@ -174,11 +173,11 @@ object MainF: TMainF
       Color = clWhite
       ParentColor = False
       PopupMenu = ShapeEditPM
-      OnMouseDown = MainPBMouseDown
-      OnMouseMove = MainPBMouseMove
-      OnMouseUp = MainPBMouseUp
-      OnMouseWheel = MainPBMouseWheel
-      OnPaint = MainPBPaint
+      OnMouseDown = PBMouseDown
+      OnMouseMove = PBMouseMove
+      OnMouseUp = PBMouseUp
+      OnMouseWheel = PBMouseWheel
+      OnPaint = PBPaint
     end
   end
   object MainMenu: TMainMenu

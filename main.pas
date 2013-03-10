@@ -5,9 +5,9 @@ unit main;
 interface
 
 uses
-  Classes, SysUtils, Math, FileUtil, Graphics, Forms, Controls,
-  Dialogs, ExtCtrls, Menus, ComCtrls, StdCtrls, Buttons, Grids, Spin, TypInfo,
-  DrawTools, DrawObjectInspector, DrawZoom, types, XMLWrite, XMLRead, DOM, DrawScene;
+  Classes, SysUtils, Math, Graphics, Forms, Controls,
+  Dialogs, ExtCtrls, Menus, StdCtrls, Buttons, Grids,
+  DrawTools, DrawObjectInspector, DrawZoom, XMLWrite, XMLRead, DOM, DrawScene;
 
 type
 
@@ -44,7 +44,7 @@ type
     HelpMI: TMenuItem;
     ExitMI: TMenuItem;
     AboutMI: TMenuItem;
-    MainPB: TPaintBox;
+    PB: TPaintBox;
     LeftP: TPanel;
     PaletteMainP: TPanel;
     PenS: TShape;
@@ -57,7 +57,7 @@ type
     procedure FillMIClick(Sender: TObject);
     procedure HorizontalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
       var ScrollPos: Integer);
-    procedure MainPBMouseWheel(Sender: TObject; Shift: TShiftState;
+    procedure PBMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure OpenMIClick(Sender: TObject);
     procedure PaletteGDblClick(Sender: TObject);
@@ -65,18 +65,18 @@ type
       aRect: TRect; aState: TGridDrawState);
     procedure ExitMIClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure MainPBMouseDown(Sender: TObject; Button: TMouseButton;
+    procedure PBMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
-    procedure MainPBMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integer);
-    procedure MainPBMouseUp(Sender: TObject; Button: TMouseButton;
+    procedure PBMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integer);
+    procedure PBMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
-    procedure MainPBPaint(Sender: TObject);
+    procedure PBPaint(Sender: TObject);
     procedure PaletteGMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PenSMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: integer);
-    procedure SaveAsMIClick(Sender: TObject);
-    procedure SaveMIClick(Sender: TObject);
+    function SaveAsMIClick(Sender: TObject):boolean;
+    function SaveMIClick(Sender: TObject):boolean;
     procedure ShapeBottomMIClick(Sender: TObject);
     procedure ShapeDeleteMIClick(Sender: TObject);
     procedure ShapeMoveDownMIClick(Sender: TObject);
@@ -110,21 +110,21 @@ implementation
 
 procedure TMainF.FormCreate(Sender: TObject);
 const
-  toolSide = 30;
-  toolSpace = 2;
-  toolPTopSpacing = 22;
+  toolSide = 30; //сторона кнопки
+  toolSpace = 2; //отступ вокруг кнопки
+  toolPTopSpacing = 22; //отступ перед первым рядом кнопок
 var
   i, j, k, t1, t2, cellInRow: integer;
   b: TSpeedButton;
   m: TBitMap;
 begin
-  PBInvalidate := @MainPB.Invalidate;
+  PBInvalidate := @PB.Invalidate;
   Scene := TScene.Create();
+  VP := TViewport.Create();
+  Inspector := TInspector.Create(ParamToolP);
   fileName := 'Безымянный';
   isEdited := false;
   SetTitle;
-  VP := TViewport.Create();
-  Inspector := TInspector.Create(ParamToolP);
   //Генерация кнопок
   t1:= 0; t2:= 0;
   cellInRow:= ToolsP.Width div (toolSide+toolSpace);
@@ -175,34 +175,30 @@ begin
 end;
 
 procedure TMainF.ToolClick(Sender: TObject);
-var
-  b: TSpeedButton;
 begin
-  b := TSpeedButton(Sender);
   ToolContainer.tool[selectedToolId].Leave;
-  selectedToolId := b.Tag;
+  selectedToolId := TSpeedButton(Sender).Tag;
   Inspector.LoadNew(TPersistent(ToolContainer.tool[selectedToolId].CreateParamObj));
 end;
 
 procedure TMainF.VerticalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
   var ScrollPos: Integer);
 begin
-  if (VerticalSB.Position+VerticalSB.PageSize) > VerticalSB.Max Then exit;;
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
 procedure TMainF.SetTitle;
 var
   c: string;
 begin
-  c:= '';
-  if isEdited Then c+= '*';
   if fileAdr <> '' Then begin
     fileName:= fileAdr;
     while pos('\', fileName) > 0 do
       fileName:= copy(fileName, pos('\', fileName)+1, length(fileName));
   end;
-  MainF.Caption := fileName + c + ' - ' + ProgramName;
+  c:= ' - ';
+  if isEdited Then c := '*' + c;
+  MainF.Caption := fileName + c + ProgramName;
 end;
 
 procedure TMainF.LoadSelectedShapes;
@@ -219,37 +215,37 @@ begin
   Inspector.Load(a);
 end;
 
-procedure TMainF.MainPBMouseDown(Sender: TObject; Button: TMouseButton;
+procedure TMainF.PBMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
-  isDrawing := True;
   isEdited := true;
   SetTitle;
+  isDrawing := true;
   ToolContainer.tool[selectedToolId].MDown(Point(X, Y), shift);
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
-procedure TMainF.MainPBMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integer);
+procedure TMainF.PBMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integer);
 begin
   ToolContainer.tool[selectedToolId].MMove(Point(X, Y), isDrawing, shift);
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
-procedure TMainF.MainPBMouseUp(Sender: TObject; Button: TMouseButton;
+procedure TMainF.PBMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: integer);
 begin
   isDrawing := False;
   ToolContainer.tool[selectedToolId].MUp(Point(X, Y), shift);
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
-procedure TMainF.MainPBPaint(Sender: TObject);
+procedure TMainF.PBPaint(Sender: TObject);
 begin
-  MainPB.Canvas.Brush.Color:= clWhite;
-  MainPB.Canvas.Brush.Style:= bsSolid;
-  MainPB.Canvas.FillRect(0,0,MainPB.Width, MainPB.Height);
-  VP.ReCalculate(MainPB, HorizontalSB, VerticalSB);
-  Scene.Draw(MainPB.Canvas);
+  PB.Canvas.Brush.Color:= clWhite;
+  PB.Canvas.Brush.Style:= bsSolid;
+  PB.Canvas.FillRect(0,0,PB.Width, PB.Height);
+  VP.ReCalculate(PB, HorizontalSB, VerticalSB);
+  Scene.Draw(PB.Canvas);
 end;
 
 procedure TMainF.PaletteGMouseDown(Sender: TObject; Button: TMouseButton;
@@ -261,7 +257,7 @@ begin
   PaletteG.MouseToCell(x, y, tCol, tRow);
   paletteCell.x:=tCol; //paletteCell - объявленно глобально
   paletteCell.y:=tRow; //используется для передачи номера ячейки в double click
-  t:= PaletteG.ColCount * paletteCell.y + paletteCell.x;
+  t:= PaletteG.ColCount * tRow + tCol;
   if Button = mbLeft Then begin
     PenS.Brush.Color:= paletteColors[t];
     Inspector.SetPenColor(PenS.Brush.Color);
@@ -282,57 +278,59 @@ begin
   end;
 end;
 
-procedure TMainF.SaveAsMIClick(Sender: TObject);
+function TMainF.SaveAsMIClick(Sender: TObject):boolean;
 begin
+  result:= false;
   if fileAdr <> '' then SaveDialog.FileName := fileName;
   if not SaveDialog.Execute Then exit;
   WriteXMLFile(Scene.GetXML, SaveDialog.FileName);
   fileAdr := SaveDialog.FileName;
   isEdited := false;
   SetTitle;
+  result:= true;
 end;
 
-procedure TMainF.SaveMIClick(Sender: TObject);
+function TMainF.SaveMIClick(Sender: TObject): boolean;
 begin
   if not isEdited Then exit;
   if fileAdr = '' then begin
-    SaveAsMIClick(nil);
+    result := SaveAsMIClick(nil);
     exit;
   end;
-  WriteXMLFile(Scene.GetXML, SaveDialog.FileName);
-  fileAdr := SaveDialog.FileName;
+  WriteXMLFile(Scene.GetXML, fileAdr);
   isEdited := false;
   SetTitle;
+  result := true;
 end;
 
 procedure TMainF.ShapeBottomMIClick(Sender: TObject);
 begin
   Scene.ShapeSelZIndex(false, false);
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
 procedure TMainF.ShapeDeleteMIClick(Sender: TObject);
 begin
   Scene.ShapeSelDelete;
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
 procedure TMainF.ShapeMoveDownMIClick(Sender: TObject);
 begin
   Scene.ShapeSelZIndex(true, false);
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
 procedure TMainF.ShapeMoveUpMIClick(Sender: TObject);
 begin
   Scene.ShapeSelZIndex(true, true);
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
 procedure TMainF.ShapeTopMIClick(Sender: TObject);
 begin
   Scene.ShapeSelZIndex(false, true);
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
 procedure TMainF.ExitMIClick(Sender: TObject);
@@ -343,7 +341,7 @@ end;
 procedure TMainF.AboutMIClick(Sender: TObject);
 begin
   ShowMessage('Векторный редактор' + #13#10 +
-    'Денис Давидюк Б8103А' + #13#10 + '08 января 2013');
+    'Денис Давидюк Б8103А' + #13#10 + '31 марта 2013');
 end;
 
 procedure TMainF.BrushSMouseDown(Sender: TObject; Button: TMouseButton;
@@ -359,12 +357,12 @@ end;
 procedure TMainF.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 var ans: integer;
 begin
+  CanClose := true;
   if isEdited = true then begin
     ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtInformation, [mbYes, mbNo, mbCancel], 0);
     if ans = mrCancel Then CanClose := false;
-    if ans = mrYes Then SaveMIClick(nil);
+    if ans = mrYes Then CanClose := SaveMIClick(nil);
   end;
-  CanClose := true;
 end;
 
 procedure TMainF.NewMIClick(Sender: TObject);
@@ -373,33 +371,33 @@ begin
   if isEdited then begin
     ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtInformation, [mbYes, mbNo, mbCancel], 0);
     if ans = mrCancel Then exit;
-    if ans = mrYes Then SaveMIClick(nil);
+    if (ans = mrYes) and not(SaveMIClick(nil)) Then exit;
   end;
   fileAdr:='';
   fileName:= 'Безымянный';
   isEdited := false;
   SetTitle;
   Scene.NewXML;
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
 procedure TMainF.FillMIClick(Sender: TObject);
 begin
   VP.ScaleTo(Point(0,0), Point(0,0));
+  PB.Invalidate;
 end;
 
 procedure TMainF.HorizontalSBScroll(Sender: TObject; ScrollCode: TScrollCode;
   var ScrollPos: Integer);
 begin
-  if (HorizontalSB.Position+HorizontalSB.PageSize) > HorizontalSB.Max Then exit;
-  MainPB.Invalidate;
+  PB.Invalidate;
 end;
 
-procedure TMainF.MainPBMouseWheel(Sender: TObject; Shift: TShiftState;
+procedure TMainF.PBMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
   VP.ScaleMouseWhell(MousePos, WheelDelta>0);
-  MainPB.Invalidate;
+  PB.Invalidate;
   Inspector.Refresh;
 end;
 
@@ -412,14 +410,14 @@ begin
     if isEdited then begin
       ans:= MessageDlg('Сохранить изменения в файле '+fileName, mtInformation, [mbYes, mbNo, mbCancel], 0);
       if ans = mrCancel Then exit;
-      if ans = mrYes Then SaveMIClick(nil);
+      if (ans = mrYes) and not(SaveMIClick(nil)) Then exit;
     end;
     ReadXMLFile(image, OpenDialog.FileName);
     if not Scene.SetXML(image) then exit;
-    fileAdr  := OpenDialog.FileName;
-    isEdited:= false;
+    fileAdr := OpenDialog.FileName;
+    isEdited := false;
     SetTitle;
-    MainPB.Invalidate;
+    PB.Invalidate;
   end;
 end;
 

@@ -5,7 +5,7 @@ unit DrawTools;
 interface
 
 uses
-  Classes, Graphics, DrawShapes, DrawObjectInspector, DrawTypes;
+  Classes, DrawShapes, DrawObjectInspector;
 
 type
 

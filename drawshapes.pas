@@ -260,9 +260,9 @@ begin
 end;
 
 procedure TS2FEllipse.Draw(canvas: TCanvas);
-var
+{var
   i: integer;
-  t: TPoint;
+  t: TPoint;}
 begin
   inherited Draw(canvas);
   canvas.Ellipse(p1.x, p1.y, p2.x, p2.y);

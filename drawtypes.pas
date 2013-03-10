@@ -2,16 +2,10 @@ unit DrawTypes;
 
 {$mode objfpc}{$H+}
 
-{
-Этот модуль содержит описание дополнительных типов данных, используемых в приложении,
-описание перегруженных методов и функций для работы с ними.
-Состояние: более-менее, есть логические ошибки.
-}
-
 interface
 
 uses
-  Classes, SysUtils, Math;
+  Classes, Math;
 
 type
   { TRectFloat }
@@ -31,7 +25,7 @@ type
 function PointFloat(p1, p2: Double): TPointFloat;
 function PointFloat(p: TPoint): TPointFloat;
 function Rect(p1, p2: TPoint):TRect; overload;
-function RectReal(p1, p2: TPointFloat):TRectFloat;
+function RectFloat(p1, p2: TPointFloat):TRectFloat;
 function Intersection(a1, a2, b1, b2: TPoint): boolean;
 function Intersection(rect: TRect; p1, p2: TPoint): boolean; overload;
 function Intersection(rect1, rect2: TRect): boolean; overload;
@@ -42,6 +36,7 @@ operator +(a, b: TPointFloat):TPointFloat;
 operator -(a, b: TPointFloat):TPointFloat;
 operator +(a, b: TPoint):TPoint;
 operator -(a, b: TPoint):TPoint;
+operator +(a, b: TRectFloat):TRectFloat;
 operator >(a, b: TPointFloat):boolean;
 operator <(a, b: TPointFloat):boolean;
 operator >=(a, b: TPointFloat):boolean;
@@ -57,7 +52,7 @@ begin
   Result.Y := p2;
 end;
 
-function RectReal(p1, p2: TPointFloat): TRectFloat;
+function RectFloat(p1, p2: TPointFloat): TRectFloat;
 begin
   Result.Left:= p1.x;
   Result.Top:= p1.y;
@@ -80,9 +75,8 @@ begin
   cb2:= b2.x-b1.x;
   cc2:= b1.x*b2.y-b1.y*b2.x;
   if ca2*cb2*cc2 <> 0 Then begin
-    if (ca1/ca2 = cb1/cb2) and (ca1/ca2 <> cc1/cc2) then begin //прямые параллельны
+    if (ca1/ca2 = cb1/cb2) and (ca1/ca2 <> cc1/cc2) then //прямые параллельны
       exit;
-    end;
     if (ca1/ca2 = cb1/cb2) and (ca1/ca2 = cc1/cc2) then begin //прямые совпадают
       if IsPointIn(a1, b1, b2) or IsPointIn(a2, b1, b2) Then result:= true;
       if IsPointIn(a1, b1, b2) and IsPointIn(a2, b1, b2) Then result:= true;
@@ -154,6 +148,14 @@ operator-(a, b: TPoint): TPoint;
 begin
   result.x:= a.X - b.X;
   result.x:= a.Y - b.Y;
+end;
+
+operator+(a, b: TRectFloat): TRectFloat;
+begin
+  result.Left := a.Left + b.Left;
+  result.Right := a.Right + b.Right;
+  result.Top := a.Top + b.Top;
+  result.Bottom := a.Bottom + b.Bottom;
 end;
 
 operator>(a, b: TPointFloat): boolean;

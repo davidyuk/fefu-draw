@@ -5,7 +5,7 @@ unit DrawToolsMouse;
 interface
 
 uses
-  Classes, SysUtils, DrawTools, Graphics, DrawShapes, Math;
+  Classes, DrawTools, Graphics, DrawShapes, Math;
 
 type
 
@@ -31,7 +31,7 @@ type
 implementation
 
 uses
-  Main, DrawTypes, DrawScene;
+  Main, DrawScene;
 
 { TTMouse }
 

@@ -5,7 +5,7 @@ unit DrawObjectEditors;
 interface
 
 uses
-  Classes, typinfo, DrawObjectInspector, Spin, ExtCtrls, StdCtrls, DrawShapes, Controls, FPCanvas;
+  Classes, typinfo, DrawObjectInspector, Spin, ExtCtrls, StdCtrls, Controls, FPCanvas;
 
 const
   margin = 2;
@@ -86,7 +86,7 @@ var
 implementation
 
 uses
-  LCLType, Graphics, SysUtils, Dialogs;
+  LCLType, Graphics, SysUtils;
 
 var
   PropValues : TStringList;
@@ -108,10 +108,14 @@ constructor TIEScale.Create(nObj: array of TPersistent; nProp: PPropInfo;
 var i: integer;
 begin
   cmbbox := TComboBox.Create(panel);
+  cmbbox.AddItem('25',nil);
   cmbbox.AddItem('50',nil);
+  cmbbox.AddItem('75',nil);
   cmbbox.AddItem('100',nil);
-  cmbbox.AddItem('200',nil);
+  cmbbox.AddItem('150',nil);
   cmbbox.AddItem('300',nil);
+  cmbbox.AddItem('500',nil);
+  cmbbox.AddItem('800',nil);
   cmbbox.parent:= panel;
   cmbbox.Left:= trunc(panel.width * ratio) + margin;
   cmbbox.width:= trunc(panel.Width * (1-ratio)) - margin*2;
@@ -200,7 +204,7 @@ end;
 procedure TIEBrushStyle.cmbboxDrawItem(Control: TWinControl; Index: Integer;
   ARect: TRect; State: TOwnerDrawState);
 const
-  height = 7; //кажется, это половина высоты отрисованного кубика
+  height = 7; //это половина высоты отрисованного внутри cbox кубика
 var
   cbox: TCombobox;
 begin
