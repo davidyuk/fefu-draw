@@ -213,7 +213,7 @@ begin
   If odFocused in State Then cbox.Canvas.Brush.Color:= cl3DLight;
   cbox.Canvas.FillRect(ARect);
   cbox.Canvas.Brush.Color:= clBlack;
-  cbox.Canvas.Brush.Style := TFPBrushStyle(cbox.Items.Objects[Index]);
+  cbox.Canvas.Brush.Style := TFPBrushStyle(PtrInt(cbox.Items.Objects[Index]));
   cbox.Canvas.FillRect(ARect.Left+1, (ARect.Bottom+ARect.Top) div 2-height, ARect.Right-1, (ARect.Bottom+ARect.Top) div 2+height);
 end;
 
@@ -236,7 +236,8 @@ begin
   cmbbox.Left:= trunc(panel.width * ratio) + margin;
   cmbbox.width:= trunc(panel.Width * (1-ratio)) - margin*2;
   for i in TFPBrushStyle do
-    if not (i in [bsImage,bsPattern]) then cmbbox.AddItem('',TObject(i));
+    if not (i in [bsImage,bsPattern]) then
+      cmbbox.AddItem('', TObject(PtrInt(i)));
   cmbbox.OnDrawItem := @cmbboxDrawItem;
   cmbbox.OnChange := @Change;
   cmbbox.Style := csOwnerDrawFixed;
@@ -265,7 +266,7 @@ begin
       break;
     end;
   for i:= 0 to cmbbox.Items.Count  do
-    if integer(cmbbox.Items.Objects[i]) = j Then begin
+    if PtrInt(cmbbox.Items.Objects[i]) = j Then begin
       cmbbox.ItemIndex:= i;
       exit;
     end;
@@ -283,7 +284,7 @@ begin
   If odFocused in State Then cbox.Canvas.Brush.Color:= cl3DLight;
   cbox.Canvas.FillRect(ARect);
   cbox.Canvas.Pen.Color:= clBlack;
-  cbox.Canvas.Pen.Style := TFPPenStyle(cbox.Items.Objects[Index]);
+  cbox.Canvas.Pen.Style := TFPPenStyle(PtrInt(cbox.Items.Objects[Index]));
   cbox.Canvas.Line(ARect.Left, (ARect.Bottom+ARect.Top) div 2, ARect.Right, (ARect.Bottom+ARect.Top) div 2);
 end;
 
@@ -307,7 +308,7 @@ begin
   cmbbox.width:= trunc(panel.Width * (1-ratio)) - margin*2;
   for i in TFPPenStyle do
     if not (i in [psinsideFrame,psPattern,psClear]) then
-      cmbbox.AddItem('',TObject(i));
+      cmbbox.AddItem('', TObject(PtrInt(i)));
   cmbbox.OnDrawItem := @cmbboxDrawItem;
   cmbbox.OnChange := @Change;
   cmbbox.Style := csOwnerDrawFixed;
@@ -336,7 +337,7 @@ begin
       break;
     end;
   for i:= 0 to cmbbox.Items.Count-1 do begin
-    if integer(cmbbox.Items.Objects[i]) = j Then begin
+    if PtrInt(cmbbox.Items.Objects[i]) = j Then begin
       cmbbox.ItemIndex:= i;
       exit;
     end;
